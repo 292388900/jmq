@@ -6,10 +6,6 @@
     <artifactId>jmq</artifactId>
     <packaging>pom</packaging>
 
-    <!--<organization>-->
-        <!--<name>ipd.com, Inc.</name>-->
-        <!--<url>http://www.ipd.com</url>-->
-    <!--</organization>-->
 
     <properties>
         <jdk.version>1.7</jdk.version>
@@ -73,36 +69,7 @@
 
     </dependencies>
 
-    <!--<developers>-->
-    <!--<developer>-->
-    <!--<name>何小锋</name>-->
-    <!--<email>hexiaofeng@ipd.com</email>-->
-    <!--</developer>-->
-    <!--<developer>-->
-    <!--<name>丁俊</name>-->
-    <!--<email>dingjun@ipd.com</email>-->
-    <!--</developer>-->
-    <!--<developer>-->
-    <!--<name>林德强</name>-->
-    <!--<email>lindeqiang@ipd.com</email>-->
-    <!--</developer>-->
-    <!--<developer>-->
-    <!--<name>郭亮</name>-->
-    <!--<email>guoliang5@ipd.com</email>-->
-    <!--</developer>-->
-    <!--<name>张克鹏</name>-->
-    <!--<email>zhangkepeng@ipd.com</email>-->
-    <!--</developer>-->
-    <!--<name>李宁</name>-->
-    <!--<email>lining11@ipd.com</email>-->
-    <!--</developer>-->
-    <!--<name>罗睿恒</name>-->
-    <!--<email>luoruiheng@ipd.com</email>-->
-    <!--</developer>-->
-    <!--</developers>-->
 
-    <!--<contributors>-->
-    <!--</contributors>-->
 
     <dependencyManagement>
         <dependencies>
