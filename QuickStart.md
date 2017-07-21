@@ -1,4 +1,4 @@
-JMQ
+Quick Start
 =================
 This quick start guide is a detailed instruction of setting up JMQ messaging system 
 
@@ -17,8 +17,6 @@ The following softwares are assumed installed:
     > git clone -b develop https://github.com/ipdcode/jmq
     > cd jmq
     > mvn -Prelease-all -DskipTests clean install -U
-
-Follow instructions in http://kafka.apache.org/documentation.html#quickstart
 
 ### Start Zookeeper ###
 Download or use your owned zookeeper to provide service
@@ -48,7 +46,7 @@ Initialize cluster infos use the telnet protocol
 
 Suppose the address of broker is 192.168.1.5
 
-    >  telnet 127.0.0.1 10088
+    >  telnet 192.168.1.5 10088
     >  auth -u jmq -p jmq
     >  topic set [{"archive":false,"consumers":{"app4Consumer":{}},"groups":["jmq102"],"importance":1,"producers":{"app4Product":{}},"queues":5,"topic":"topic_simple","type":"TOPIC"}]
     >  topic get 

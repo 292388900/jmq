@@ -25,9 +25,9 @@ In most of the cases, we will use this policy.
 If so, we need to adjust their configuration information for broker and topic.
 
 #### Broker demonstration: ####
-     [{"alias":"jmq100_m","dataCenter":9,"id":2,"ip":"192.168.1.2","permission":"FULL","port":50088,"retryType":"DB","syncMode":"SYNCHRONOUS"},
-     {"alias":"jmq100_s","dataCenter":9,"id":2,"ip":"192.168.1.3","permission":"NONE","port":50088,"retryType":"DB","syncMode":"SYNCHRONOUS"},
-     {"alias":"jmq102_m","dataCenter":9,"id":0,"ip":"192.168.1.5","permission":"FULL","port":50088,"retryType":"DB","syncMode":"SYNCHRONOUS"},
+     [{"alias":"jmq100_m","dataCenter":9,"id":0,"ip":"192.168.1.2","permission":"FULL","port":50088,"retryType":"DB","syncMode":"SYNCHRONOUS"},
+     {"alias":"jmq100_s","dataCenter":9,"id":1,"ip":"192.168.1.3","permission":"NONE","port":50088,"retryType":"DB","syncMode":"SYNCHRONOUS"},
+     {"alias":"jmq102_m","dataCenter":9,"id":2,"ip":"192.168.1.5","permission":"FULL","port":50088,"retryType":"DB","syncMode":"SYNCHRONOUS"},
      {"alias":"jmq102_s","dataCenter":9,"id":3,"ip":"192.168.1.6","permission":"NONE","port":50088,"retryType":"DB","syncMode":"SYNCHRONOUS"}]
 
 #### Topic demonstration: ####

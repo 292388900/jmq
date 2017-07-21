@@ -6,7 +6,7 @@ capacity and flexible scalability.
 
 JD researched the JMQ independently, with all of its proprietary intellectual property and manufacturing technology.
 
-### JMQ feature ###
+### JMQ Feature ###
 The following softwares are assumed installed:
   1. Technical standard
    - Custom protocol specification
@@ -20,14 +20,14 @@ The following softwares are assumed installed:
    - Async flush disk, TPS for 1K data is 53894.Response time is 0.004 second
   4. Industry Sustainable
    - Trillion-level message capacity guaranteed 
-  5. light-client model
+  5. Light-client Model
    - Only communicate with broker
    - Consumer support pull model
-   - Transaction-message
    - Order-message
+   - Transaction-message
    - Multi IDC deployment, send and consume nearby
    - Parallel consumption
-  6. Flexible replication policy
+  6. Flexible Replication Policy
    - Default sync replication or degrade async replication
    - Fixed or dynamic election strategy
    - Support for consumption from slave
