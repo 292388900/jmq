@@ -561,8 +561,8 @@ public class ClusterTransportManager extends Service implements TransportManager
                 // 新增加分组
                 GroupClient transport =
                         permission == Permission.READ ?
-                                new ConsumerClient(client, new RoundRobinFailoverPolicy(config.getAddresses()), retryPolicy)
-                                : new ProducerClient(client, new RoundRobinFailoverPolicy(config.getAddresses()), retryPolicy);
+                                new ConsumerClient(client, new GroupFailoverPolicy(group, Permission.READ), retryPolicy)
+                                : new ProducerClient(client, new GroupFailoverPolicy(group, Permission.WRITE), retryPolicy);
                 transport.setGroup(group);
                 transport.setClientId(clientId);
                 transport.setConfig(config);

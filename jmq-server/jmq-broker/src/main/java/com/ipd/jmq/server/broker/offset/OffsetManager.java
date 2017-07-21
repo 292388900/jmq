@@ -334,8 +334,8 @@ public class OffsetManager extends Service {
      */
     public void resetAckOffset(final String topic, final int queueId, final String consumer, final long offset,
                                boolean replicate) {
-        if (logger.isInfoEnabled()) {
-            logger.info(
+        if (logger.isDebugEnabled()) {
+            logger.debug(
                     String.format("reset topic:%s,queueId:%d consumer:%s,offset %d", topic, queueId, consumer, offset));
         }
         TopicOffset topicOffset = getAndCreateOffset(topic);

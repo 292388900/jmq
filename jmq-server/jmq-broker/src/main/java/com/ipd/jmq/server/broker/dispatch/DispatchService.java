@@ -14,6 +14,7 @@ import com.ipd.jmq.toolkit.lang.LifeCycle;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -74,7 +75,7 @@ public interface DispatchService extends LifeCycle, LeaderListener {
      * @param consumer     消费者
      * @param isSuccessAck 是否正常确认
      * @return 是否成功
-     * @throws com.ipd.jmq.common.exception.JMQException
+     * @throws JMQException
      */
     boolean acknowledge(MessageLocation[] locations, Consumer consumer, boolean isSuccessAck) throws JMQException;
 
@@ -186,6 +187,16 @@ public interface DispatchService extends LifeCycle, LeaderListener {
      * @return 开始消费位置
      */
     long getOffset(String topic, int queueId, String consumer);
+
+    /**
+     * 用于 KAFKA 获取 offset
+     * @param topic     主题
+     * @param queueId   队列序号
+     * @param timestamp 从哪开始(最早-2/最新-1/其他timestamp如果找不到 则返回最新offset)
+     * @param maxNumOffsets 最大数量
+     * @return offsets
+     */
+    Set<Long> getOffsetsForKafkaBefore(String topic, int queueId, long timestamp, int maxNumOffsets);
 
     /**
      * 获取主题的消费位置

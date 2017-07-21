@@ -16,8 +16,8 @@ import java.util.concurrent.ConcurrentMap;
  * 存储接口
  */
 public interface Store extends LifeCycle {
-    interface ProcessedCallback {
-        void onReplicated(PutResult result);
+    interface ProcessedCallback<T extends JournalLog> {
+        void onProcessed(StoreContext<T> context) throws JMQException;
     }
 
     /**
@@ -299,12 +299,11 @@ public interface Store extends LifeCycle {
     /**
      * 批量添加日志
      *
-     * @param logs 日志列表
-     * @param <T>  日志类型
+     * @param context 日志上下文
      * @return
      * @throws JMQException
      */
-    <T extends JournalLog> PutResult putJournalLogs(List<T> logs) throws JMQException;
+    void putJournalLogs(StoreContext<?> context) throws JMQException;
 
 
     /**

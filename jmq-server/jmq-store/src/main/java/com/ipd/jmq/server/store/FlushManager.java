@@ -30,29 +30,34 @@ public class FlushManager extends Service {
     // 队列管理器
     protected QueueManager queueManager;
     // 派发服务
-    protected DispatchService dispatchService;
+    protected volatile long flushedJournalOffset = 0;
     // 存储
     protected Service store;
     // 检查点刷盘线程
     protected Thread thread;
 
-    public FlushManager(StoreConfig config, CheckPoint checkPoint, JournalManager journalManager,
-                        QueueManager queueManager, DispatchService dispatchService, Service store) {
+    public FlushManager(StoreConfig config, CheckPoint checkPoint, JournalManager journalManager, QueueManager queueManager, Service store) {
 
         Preconditions.checkArgument(config != null, "config can not be null");
         Preconditions.checkArgument(checkPoint != null, "checkPoint can not be null");
         Preconditions.checkArgument(journalManager != null, "journalManager can not be null");
         Preconditions.checkArgument(queueManager != null, "queueManager can not be null");
-        Preconditions.checkArgument(dispatchService != null, "dispatchService can not be null");
         Preconditions.checkArgument(store != null, "store can not be null");
 
         this.config = config;
         this.checkPoint = checkPoint;
         this.journalManager = journalManager;
         this.queueManager = queueManager;
-        this.dispatchService = dispatchService;
 
         this.store = store;
+    }
+
+    public long getFlushedJournalOffset() {
+        return flushedJournalOffset;
+    }
+
+    public void setFlushedJournalOffset(long flushedJournalOffset) {
+        this.flushedJournalOffset = flushedJournalOffset;
     }
 
     @Override
@@ -83,7 +88,7 @@ public class FlushManager extends Service {
             return;
         }
         //先保存日志文件的位置到临时变量，再刷新queue文件，然后再写检查点，避免刷queue时有内容写入
-        long recoverOffset = dispatchService.getJournalOffset();
+        long recoverOffset = flushedJournalOffset;
         // 队列刷盘
         queueManager.flush();
 

@@ -1,6 +1,6 @@
 package com.ipd.jmq.common.network.v3.command.telnet;
 
-import com.ipd.jmq.common.network.command.telnet.Commands;
+import com.ipd.jmq.common.telnet.Commands;
 
 /**
  * Created by zhangkepeng on 16-12-12.

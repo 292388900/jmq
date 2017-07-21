@@ -23,7 +23,7 @@ import com.ipd.jmq.common.network.v3.command.JMQHeader;
 import com.ipd.jmq.common.network.v3.command.RetryMessage;
 import com.ipd.jmq.common.network.v3.session.ConsumerId;
 import com.ipd.jmq.common.network.FailoverState;
-import com.ipd.jmq.common.network.command.Command;
+import com.ipd.jmq.common.network.v3.command.Command;
 import com.ipd.jmq.toolkit.concurrent.EventListener;
 import com.ipd.jmq.toolkit.lang.Close;
 import com.ipd.jmq.toolkit.retry.RetryPolicy;

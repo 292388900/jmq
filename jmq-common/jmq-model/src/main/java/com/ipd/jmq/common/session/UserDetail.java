@@ -11,14 +11,16 @@ public class UserDetail extends Identity {
     // 角色
     protected Identity[] roles;
 
+    protected boolean isAdmin;
+
     public UserDetail() {
     }
 
-    public UserDetail(long id, String code, String name, Identity... roles) {
+    public UserDetail(long id, String code, String name, boolean isAdmin) {
         this.id = id;
         this.code = code;
         this.name = name;
-        this.roles = roles;
+        this.isAdmin = isAdmin;
     }
 
     public Identity[] getRoles() {
@@ -29,4 +31,11 @@ public class UserDetail extends Identity {
         this.roles = roles;
     }
 
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setIsAdmin(boolean isAdmin) {
+        this.isAdmin = isAdmin;
+    }
 }

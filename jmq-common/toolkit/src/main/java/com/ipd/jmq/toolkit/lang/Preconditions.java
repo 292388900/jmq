@@ -43,7 +43,7 @@ package com.ipd.jmq.toolkit.lang;
  * <h3>Other types of preconditions</h3>
  * <p>
  * <p>Not every type of precondition failure is supported by these methods. Continue to throw
- * standard jdK exceptions such as {@link java.util.NoSuchElementException} or
+ * standard.ipd. exceptions such as {@link java.util.NoSuchElementException} or
  * {@link UnsupportedOperationException} in the situations they are intended for.
  * <p>
  * <h3>Non-preconditions</h3>
@@ -354,7 +354,7 @@ public final class Preconditions {
      * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
      */
     public static void checkArgument(final boolean b, final String errorMessage, final Object p1, final Object p2,
-                                     final Object p3) {
+            final Object p3) {
         if (!b) {
             throw new IllegalArgumentException(format(errorMessage, p1, p2, p3));
         }
@@ -366,7 +366,7 @@ public final class Preconditions {
      * <p>See {@link #checkArgument(boolean, String, Object...)} for details.
      */
     public static void checkArgument(final boolean b, final String errorMessage, final Object p1, final Object p2,
-                                     final Object p3, final Object p4) {
+            final Object p3, final Object p4) {
         if (!b) {
             throw new IllegalArgumentException(format(errorMessage, p1, p2, p3, p4));
         }
@@ -671,7 +671,7 @@ public final class Preconditions {
      * <p>See {@link #checkState(boolean, String, Object...)} for details.
      */
     public static void checkState(final boolean b, final String errorMessage, final Object p1, final Object p2,
-                                  final Object p3) {
+            final Object p3) {
         if (!b) {
             throw new IllegalStateException(format(errorMessage, p1, p2, p3));
         }
@@ -684,7 +684,7 @@ public final class Preconditions {
      * <p>See {@link #checkState(boolean, String, Object...)} for details.
      */
     public static void checkState(final boolean b, final String errorMessage, final Object p1, final Object p2,
-                                  final Object p3, final Object p4) {
+            final Object p3, final Object p4) {
         if (!b) {
             throw new IllegalStateException(format(errorMessage, p1, p2, p3, p4));
         }
@@ -989,7 +989,7 @@ public final class Preconditions {
      * <p>See {@link #checkNotNull(Object, String, Object...)} for details.
      */
     public static <T> T checkNotNull(final T obj, final String errorMessage, final Object p1, final Object p2,
-                                     final Object p3) {
+            final Object p3) {
         if (obj == null) {
             throw new NullPointerException(format(errorMessage, p1, p2, p3));
         }
@@ -1002,7 +1002,7 @@ public final class Preconditions {
      * <p>See {@link #checkNotNull(Object, String, Object...)} for details.
      */
     public static <T> T checkNotNull(final T obj, final String errorMessage, final Object p1, final Object p2,
-                                     final Object p3, final Object p4) {
+            final Object p3, final Object p4) {
         if (obj == null) {
             throw new NullPointerException(format(errorMessage, p1, p2, p3, p4));
         }
@@ -1027,7 +1027,7 @@ public final class Preconditions {
    * a hotspot optimizer bug, which should be fixed, but that's a separate, big project).
    *
    * The coding pattern above is heavily used in java.util, e.g. in ArrayList. There is a
-   * RangeCheckMicroBenchmark in the jdK that was used to test this.
+   * RangeCheckMicroBenchmark in the.ipd. that was used to test this.
    *
    * But the methods in this class want to throw different exceptions, depending on the args, so it
    * appears that this pattern is not directly applicable. But we can use the ridiculous, devious

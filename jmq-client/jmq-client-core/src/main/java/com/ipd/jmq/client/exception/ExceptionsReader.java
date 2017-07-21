@@ -18,6 +18,8 @@ import java.util.Properties;
  */
 public class ExceptionsReader {
 
+    // TODO: 12/21/16 link url to jmq-web for dynamic configuration
+
     // slf4j logger
     private static final Logger logger = LoggerFactory.getLogger(ExceptionsReader.class);
     // map

@@ -11,7 +11,7 @@ import com.ipd.jmq.common.network.v3.command.RemoveConnection;
 import com.ipd.jmq.common.network.v3.session.ClientId;
 import com.ipd.jmq.common.network.v3.session.ConnectionId;
 import com.ipd.jmq.common.model.Acknowledge;
-import com.ipd.jmq.common.network.command.Command;
+import com.ipd.jmq.common.network.v3.command.Command;
 import com.ipd.jmq.toolkit.network.Ipv4;
 import com.ipd.jmq.toolkit.retry.RetryPolicy;
 import org.slf4j.Logger;

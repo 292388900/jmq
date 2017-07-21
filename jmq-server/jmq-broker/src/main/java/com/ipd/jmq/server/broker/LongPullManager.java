@@ -3,9 +3,7 @@ package com.ipd.jmq.server.broker;
 import com.ipd.jmq.common.cluster.TopicConfig;
 import com.ipd.jmq.common.exception.JMQCode;
 import com.ipd.jmq.common.exception.JMQException;
-import com.ipd.jmq.common.network.v3.command.GetMessage;
-import com.ipd.jmq.common.network.v3.command.GetMessageAck;
-import com.ipd.jmq.common.network.v3.command.JMQHeader;
+import com.ipd.jmq.common.network.v3.command.*;
 import com.ipd.jmq.common.network.v3.session.Consumer;
 import com.ipd.jmq.common.network.v3.session.Joint;
 import com.ipd.jmq.server.broker.cluster.ClusterManager;
@@ -13,9 +11,6 @@ import com.ipd.jmq.server.broker.dispatch.DispatchService;
 import com.ipd.jmq.server.broker.dispatch.PullResult;
 import com.ipd.jmq.server.broker.monitor.BrokerMonitor;
 import com.ipd.jmq.common.network.Transport;
-import com.ipd.jmq.common.network.command.Command;
-import com.ipd.jmq.common.network.command.CommandCallback;
-import com.ipd.jmq.common.network.command.Direction;
 import com.ipd.jmq.toolkit.service.Service;
 import com.ipd.jmq.toolkit.service.ServiceThread;
 import com.ipd.jmq.toolkit.time.MilliPeriod;
@@ -51,7 +46,7 @@ public class LongPullManager extends Service {
     protected BrokerConfig config;
     // 监控管理
     protected BrokerMonitor brokerMonitor;
-
+    public LongPullManager(){}
     public LongPullManager(ExecutorService executorService, SessionManager sessionManager,
                            ClusterManager clusterManager, DispatchService dispatchService, BrokerConfig config,
                            BrokerMonitor brokerMonitor) {
@@ -79,6 +74,30 @@ public class LongPullManager extends Service {
         this.clusterManager = clusterManager;
         this.config = config;
         this.dispatchService = dispatchService;
+        this.brokerMonitor = brokerMonitor;
+    }
+
+    public void setDispatchService(DispatchService dispatchService) {
+        this.dispatchService = dispatchService;
+    }
+
+    public void setSessionManager(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
+    }
+
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
+    }
+
+    public void setClusterManager(ClusterManager clusterManager) {
+        this.clusterManager = clusterManager;
+    }
+
+    public void setConfig(BrokerConfig config) {
+        this.config = config;
+    }
+
+    public void setBrokerMonitor(BrokerMonitor brokerMonitor) {
         this.brokerMonitor = brokerMonitor;
     }
 

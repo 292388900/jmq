@@ -226,6 +226,7 @@ public class ConsumerMonitorImpl implements ConsumerMonitor{
         long maxOffset;
         long minOffsetIdTimestamp;
         long maxOffsetIdTimestamp;
+
         try {
             minOffset = store.getMinOffset(topic, queueId);
             maxOffset = store.getMaxOffset(topic, queueId);

@@ -2,7 +2,6 @@ package com.ipd.jmq.common.network.v3.command;
 
 
 import com.ipd.jmq.common.network.Types;
-import com.ipd.jmq.common.network.command.Payload;
 
 /**
  * jmq 命令实体.

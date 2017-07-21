@@ -57,9 +57,9 @@ public class GetJournal extends JMQPayload {
     }
 
     public void validate() {
-        Preconditions.checkArgument(offset > 0, "offset must be greater than or equal 0.");
-        Preconditions.checkArgument(maxOffset > 0, "maxOffset must be greater than or equal 0.");
-        Preconditions.checkArgument(maxOffset >= offset, "maxOffset must be greater than or equal offset.");
+        Preconditions.checkArgument(offset >= 0, "offset must be greater than or equal 0.");
+        Preconditions.checkArgument(maxOffset >= 0, "maxOffset must be greater than or equal 0.");
+        Preconditions.checkArgument(maxOffset >= offset || maxOffset ==0, "maxOffset must be greater than or equal offset.");
     }
 
     @Override

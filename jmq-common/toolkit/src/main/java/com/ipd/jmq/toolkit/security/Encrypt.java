@@ -12,6 +12,9 @@ import java.security.GeneralSecurityException;
  * 加密工具
  */
 public class Encrypt {
+
+    public static final String DEFAULT_KEY = "www.ipd.com";
+
     /**
      * 加密
      *

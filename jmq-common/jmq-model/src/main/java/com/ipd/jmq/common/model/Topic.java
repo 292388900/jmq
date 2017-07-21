@@ -22,24 +22,10 @@ public class Topic extends BaseModel {
     @NotNull
     private String name;
     /**
-     * 消息机房分布
-     */
-    private String distribution = null;
-    /**
-     * 消息生产者部门
-     */
-    private String department = null;
-    /**
      * 消息类型代码
      */
     @Pattern(regexp = "^[a-zA-Z0-9]+[a-zA-Z0-9_]*[a-zA-Z0-9]+$", message = "Please enter correct code")
     private String code;
-    /**
-     * 队列重要性
-     */
-    @Min(0)
-    @Max(2)
-    private int importance = 2;
     /**
      * 队列数
      */
@@ -60,8 +46,6 @@ public class Topic extends BaseModel {
     private int type;
 
     private String labels;
-
-    private String version;
 
     public String getLabels() {
         return labels;
@@ -94,18 +78,6 @@ public class Topic extends BaseModel {
         this.code = code;
     }
 
-    public String getDistribution() { return distribution; }
-
-    public void setDistribution(String distribution) { this.distribution = distribution; }
-
-    public String getDepartment() { return department; }
-
-    public void setDepartment(String department) { this.department = department; }
-
-    public int getImportance() { return importance; }
-
-    public void setImportance(int importance) { this.importance = importance; }
-
     public int getQueues() {
         return queues;
     }
@@ -136,13 +108,5 @@ public class Topic extends BaseModel {
 
     public void setType(int type) {
         this.type = type;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
     }
 }

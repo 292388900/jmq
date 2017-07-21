@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+    <property>
+        <name>hbase.zookeeper.quorum</name>
+        <value>${hbase_zookeeper_quorum}</value>
+    </property>
+
+    <property>
+        <name>hbase.client.scanner.caching</name>
+        <value>200</value>
+    </property>
+
+    <property>
+        <name>zookeeper.znode.parent</name>
+        <value>${zookeeper_znode_parent}</value>
+    </property>
+
+</configuration>

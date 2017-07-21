@@ -44,7 +44,7 @@ public class MonitorParam {
     private String password;
 
     @Parameter(names = {"-q", "--queueId"})
-    private short queueId;
+    private Integer queueId;
 
     @Parameter(names = {"-C", "--count"})
     private int count;
@@ -74,11 +74,11 @@ public class MonitorParam {
         this.bool = bool;
     }
 
-    public short getQueueId() {
+    public int getQueueId() {
         return queueId;
     }
 
-    public void setQueueId(short queueId) {
+    public void setQueueId(int queueId) {
         this.queueId = queueId;
     }
 
@@ -151,7 +151,7 @@ public class MonitorParam {
         REPS("reps", Boolean.class),
         ROLE("role", ClusterRole.class),
         VERSION("version", String.class),
-        INFO("Info", String.class),
+        INFO("info", String.class),
         CONFIG("config", String.class),
         // 主题级别监控指令类型
         ADD("add", String.class),

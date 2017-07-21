@@ -2,8 +2,6 @@ package com.ipd.jmq.common.network.v3.command;
 
 import com.ipd.jmq.common.exception.JMQCode;
 import com.ipd.jmq.common.model.Acknowledge;
-import com.ipd.jmq.common.network.command.Command;
-import com.ipd.jmq.common.network.command.Direction;
 
 /**
  * 命令工具类.

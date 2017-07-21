@@ -1,7 +1,6 @@
 package broker.cluster.kafka;
 
 import com.ipd.jmq.server.broker.BrokerConfig;
-import com.ipd.jmq.server.store.StoreService;
 import com.ipd.jmq.common.network.ServerConfig;
 import com.ipd.jmq.registry.Registry;
 import com.ipd.jmq.registry.zookeeper.ZKRegistry;
@@ -18,7 +17,6 @@ public class KafkaClusterManagerTest {
     private static ServerConfig serverConfig;
     private static BrokerConfig config;
     private static Registry registry;
-    private static StoreService storeService;
 
     @BeforeClass
     public static void init() throws Exception {
@@ -35,7 +33,6 @@ public class KafkaClusterManagerTest {
         config = new BrokerConfig();
         config.setRegistry(registry);
         config.setServerConfig(serverConfig);
-        storeService = new StoreService(config.getStoreConfig());
     }
 
     @Test

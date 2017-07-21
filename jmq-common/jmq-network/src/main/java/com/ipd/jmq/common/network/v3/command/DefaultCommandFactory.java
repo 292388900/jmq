@@ -1,9 +1,5 @@
 package com.ipd.jmq.common.network.v3.command;
 
-import com.ipd.jmq.common.network.command.Command;
-import com.ipd.jmq.common.network.command.CommandFactory;
-import com.ipd.jmq.common.network.command.Header;
-
 /**
  * JMQ 命令构造器.
  *

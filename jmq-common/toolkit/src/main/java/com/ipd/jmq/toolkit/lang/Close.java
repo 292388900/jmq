@@ -1,4 +1,6 @@
-
+/**
+ *
+ */
 package com.ipd.jmq.toolkit.lang;
 
 import javax.sql.DataSource;

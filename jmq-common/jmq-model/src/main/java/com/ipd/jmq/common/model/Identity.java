@@ -30,6 +30,10 @@ public class Identity implements Serializable {
         this.status = status;
     }
 
+    public Identity(String code) {
+        this.code = code;
+    }
+
     public long getId() {
         return id;
     }

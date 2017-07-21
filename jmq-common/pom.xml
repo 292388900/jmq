@@ -16,8 +16,8 @@
 
     <modules>
         <module>jmq-model</module>
-        <module>jmq-cache</module>
         <module>jmq-network</module>
+        <module>kafka-network</module>
         <module>registry</module>
         <module>toolkit</module>
     </modules>

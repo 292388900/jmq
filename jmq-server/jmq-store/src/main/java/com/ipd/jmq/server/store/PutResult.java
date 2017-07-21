@@ -16,9 +16,11 @@ public class PutResult {
     // 存储时间
     private long storeTime;
     // 水位
-    private long waterMark;
+    private long journalOffset;
     // 复制状态
     private JMQCode replicationCode = JMQCode.SUCCESS;
+
+    private Store.ProcessedCallback callback;
 
     public JMQCode getCode() {
         return code;
@@ -52,12 +54,20 @@ public class PutResult {
         this.replicationCode = replicationCode;
     }
 
-    public long getWaterMark() {
-        return waterMark;
+    public long getJournalOffset() {
+        return journalOffset;
     }
 
-    public void setWaterMark(long waterMark) {
-        this.waterMark = waterMark;
+    public void setJournalOffset(long journalOffset) {
+        this.journalOffset = journalOffset;
+    }
+
+    public Store.ProcessedCallback getCallback() {
+        return callback;
+    }
+
+    public void setCallback(Store.ProcessedCallback callback) {
+        this.callback = callback;
     }
 
     public PutResult() {

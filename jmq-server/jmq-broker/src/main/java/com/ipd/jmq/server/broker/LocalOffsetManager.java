@@ -30,10 +30,22 @@ public class LocalOffsetManager extends Service {
     // 广播消息确认线程
     protected ScheduledExecutorService scheduler = Executors
             .newSingleThreadScheduledExecutor(new NamedThreadFactory("JMQ_SERVER_EXPIRE_ACK_SCHEDULE"));
-
+    public LocalOffsetManager(){}
     public LocalOffsetManager(BrokerConfig config, ClusterManager clusterManager, DispatchService dispatchService) {
         this.config = config;
         this.clusterManager = clusterManager;
+        this.dispatchService = dispatchService;
+    }
+
+    public void setConfig(BrokerConfig config) {
+        this.config = config;
+    }
+
+    public void setClusterManager(ClusterManager clusterManager) {
+        this.clusterManager = clusterManager;
+    }
+
+    public void setDispatchService(DispatchService dispatchService) {
         this.dispatchService = dispatchService;
     }
 

@@ -187,6 +187,9 @@ public class BrokerMessage extends Message implements Serializable, JournalLog {
     }
 
     public int getSize() {
+        if (this.size <= 0){
+            return super.getSize();
+        }
         return this.size;
     }
 

@@ -27,7 +27,7 @@ public interface Compressor {
      * @param offset 偏移量
      * @param size   长度
      * @param out    输出流
-     * @throws java.io.IOException
+     * @throws IOException
      */
     void decompress(byte[] buf, int offset, int size, OutputStream out) throws IOException;
 }

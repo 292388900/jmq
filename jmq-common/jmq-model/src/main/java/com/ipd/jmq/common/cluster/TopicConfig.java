@@ -76,7 +76,7 @@ public class TopicConfig implements Serializable {
         config.setArchive(topic.isArchive());
         config.setQueues((short) topic.getQueues());
         config.setType(TopicType.valueOf(topic.getType()));
-        config.setImportance(topic.getImportance());
+//        config.setImportance(topic.getImportance());
         return config;
     }
 
@@ -99,19 +99,19 @@ public class TopicConfig implements Serializable {
         consumerPolicy.setPaused(consumer.isPaused() ? true : null);
         consumerPolicy.setRetry(consumer.isRetry() ? null : false);
         consumerPolicy.setSeq(TopicType.valueOf(topic.getType()) == TopicType.SEQUENTIAL ? true : null);
-        consumerPolicy.setRole(ClusterRole.MASTER.equals(consumer.getRole()) ? null : consumer.getRole());
         consumerPolicy.setOffsetMode(OffsetMode.REMOTE.equals(consumer.getOffsetMode()) ? null : consumer.getOffsetMode());
-        consumerPolicy.setSelector(consumer.getSelector());
-        consumerPolicy.setConcurrentConsume(consumer.isConcurrentConsume() ? true : null);
+        consumerPolicy.setConcurrentConsume(consumer.getConcurrents() > 0 ? true : null);
         consumerPolicy.setDelay(consumer.getDelay() > 0 ? consumer.getDelay() : null);
-        consumerPolicy.setPrefetchSize(consumer.getPrefetchSize() > 0 ? consumer.getPrefetchSize() : null);
+//        consumerPolicy.setRole(ClusterRole.MASTER.equals(consumer.getRole()) ? null : consumer.getRole());
+//        consumerPolicy.setSelector(consumer.getSelector());
+//        consumerPolicy.setPrefetchSize(consumer.getPrefetchSize() > 0 ? consumer.getPrefetchSize() : null);
         RetryPolicy retryPolicy = new RetryPolicy();
         retryPolicy.setRetryDelay(consumer.getRetryDelay() <= 0 ? null : consumer.getRetryDelay());
         retryPolicy.setMaxRetryDelay(consumer.getMaxRetryDelay() <= 0 ? null : consumer.getMaxRetryDelay());
         retryPolicy.setMaxRetrys(consumer.getMaxRetrys() <= 0 ? null : consumer.getMaxRetrys());
         retryPolicy.setExpireTime(consumer.getExpireTime() <= 0 ? null : consumer.getExpireTime());
-        retryPolicy.setUseExponentialBackOff(consumer.isUseExponentialBackOff() ? null : false);
-        retryPolicy.setBackOffMultiplier(consumer.getBackOffMultiplier() <= 0 ? null : consumer.getBackOffMultiplier());
+        retryPolicy.setUseExponentialBackOff(consumer.isUseExpBackoff() ? null : false);
+        retryPolicy.setBackOffMultiplier(consumer.getBackoffMultiplier() <= 0 ? null : consumer.getBackoffMultiplier());
         if (retryPolicy.getRetryDelay() != null || retryPolicy.getMaxRetryDelay() != null || retryPolicy
                 .getMaxRetrys() != null || retryPolicy.getUseExponentialBackOff() != null || retryPolicy
                 .getBackOffMultiplier() != null || retryPolicy.getExpireTime() != null) {
@@ -133,10 +133,10 @@ public class TopicConfig implements Serializable {
         }
         ProducerPolicy policy = new ProducerPolicy();
         policy.setSeq(TopicType.valueOf(topic.getType()) == TopicType.SEQUENTIAL ? true : null);
-        policy.setNearby(producer.isNearby() ? true : null);
-        policy.setSingle(producer.isSingle() ? true : null);
+        policy.setNearby(producer.isNearBy() ? true : null);
         policy.setWeight(producer.weights());
-        policy.setTxTimeout(producer.getTxTimeout() > 0 ? producer.getTxTimeout() : null);
+//        policy.setSingle(producer.isSingle() ? true : null);
+//        policy.setTxTimeout(producer.getTxTimeout() > 0 ? producer.getTxTimeout() : null);
         return policy;
     }
 
@@ -146,12 +146,12 @@ public class TopicConfig implements Serializable {
      * @param topics    主题
      * @param producers 生产策略
      * @param consumers 消费策略
-     * @param groups    分组
+     * @param topicShards    分组
      * @return 主题配置列表
      * @throws Exception
      */
     public static List<TopicConfig> toTopicConfigs(List<Topic> topics, List<Producer> producers,
-                                                   List<Consumer> consumers, List<TopicGroup> groups) throws Exception {
+                                                   List<Consumer> consumers, List<TopicShard> topicShards) throws Exception {
         if (topics == null || topics.isEmpty()) {
             return new ArrayList<TopicConfig>();
         }
@@ -165,23 +165,26 @@ public class TopicConfig implements Serializable {
         TopicConfig config;
         Topic topic;
         for (Producer producer : producers) {
-            config = configMap.get(producer.getTopicId());
-            topic = topicMap.get(producer.getTopicId());
+            config = configMap.get(producer.getTopic().getId());
+            topic = topicMap.get(producer.getTopic().getId());
             if (config != null) {
-                config.addProducerPolicy(producer.getApp(), toPolicy(topic, producer));
+                if (producer.getApp().getCode() == null || "".equals(producer.getApp().getCode())) {
+                    continue;
+                }
+                config.addProducerPolicy(producer.getApp().getCode(), toPolicy(topic, producer));
             }
         }
         for (Consumer consumer : consumers) {
-            config = configMap.get(consumer.getTopicId());
-            topic = topicMap.get(consumer.getTopicId());
+            config = configMap.get(consumer.getTopic().getId());
+            topic = topicMap.get(consumer.getTopic().getId());
             if (config != null) {
-                config.addConsumerPolicy(consumer.getApp(), toPolicy(topic, consumer));
+                config.addConsumerPolicy(consumer.getApp().getCode(), toPolicy(topic, consumer));
             }
         }
-        for (TopicGroup group : groups) {
-            config = configMap.get(group.getTopicId());
+        for (TopicShard topicShard : topicShards) {
+            config = configMap.get(topicShard.getTopic().getId());
             if (config != null) {
-                config.getGroups().add(group.getGroup());
+                config.getGroups().add(topicShard.getShard().getCode());
             }
         }
         return new ArrayList<TopicConfig>(configMap.values());
@@ -406,10 +409,12 @@ public class TopicConfig implements Serializable {
         // 是否顺序
         private Boolean seq;
         // 是否允许多个发送者
+        @Deprecated
         private Boolean single;
         // 生产者权重 <group,weight>
         private Map<String, Short> weight;
         //
+        @Deprecated
         private Integer txTimeout;
 
         public ProducerPolicy() {
@@ -489,8 +494,10 @@ public class TopicConfig implements Serializable {
         // 顺序消费
         private Boolean seq;
         // 过滤器
+        @Deprecated
         private String selector;
         // 消费节点角色 null表示master
+        @Deprecated
         private ClusterRole role;
         // 消息偏移量管理 null 表示remote
         private OffsetMode offsetMode;

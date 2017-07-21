@@ -89,8 +89,8 @@ public class BrokerMonitorTool extends Service{
     }
 
     // 获取消费者指定队列的消费位置信息
-    public OffsetInfo getOffsetInfo(String topic, short queueId, String app) {
-        return consumerMonitor.getOffsetInfo(topic, queueId, app);
+    public OffsetInfo getOffsetInfo(String topic, String app, int queueId) {
+        return consumerMonitor.getOffsetInfo(topic, (short)queueId, app);
     }
 
     public void resetAckOffset(String topic, short queueId, String app, long offsetOrTime, boolean isOffset) throws

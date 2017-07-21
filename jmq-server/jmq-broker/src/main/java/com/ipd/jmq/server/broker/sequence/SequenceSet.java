@@ -30,7 +30,8 @@ import java.util.NoSuchElementException;
  *
  * @author chirino
  */
-public class SequenceSet extends LinkedNodeList<Sequence> implements Iterable<Long> {
+//public class SequenceSet extends LinkedNodeList<Sequence> implements Iterable<Long> {
+public class SequenceSet extends LinkedNodeList<Sequence> {
     int blockSize = ConsumeQueue.CQ_RECORD_SIZE;
 
     public SequenceSet() {

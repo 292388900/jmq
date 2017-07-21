@@ -48,9 +48,9 @@ public class ControllerService {
                     if (isAppClientIPLimit) {
                         // 控制服务端日志输出
                         if (type) {
-                            ControllerPrintLog.printLog(app, ControllerType.APP_CLIENT_IP_LIMIT, ControllerPrintLog.APP_LEVEL_PRODUCE_PRINT_LOG, ControllerPrintLog.APP_LIMIT_IP_PRODUCE);
+                            ControllerPrintLog.printLog(app, AppPermissionType.APP_CLIENT_IP_LIMIT, ControllerPrintLog.APP_LEVEL_PRODUCE_PRINT_LOG, ControllerPrintLog.APP_LIMIT_IP_PRODUCE);
                         }else {
-                            ControllerPrintLog.printLog(app, ControllerType.APP_CLIENT_IP_LIMIT, ControllerPrintLog.APP_LEVEL_CONSUME_PRINT_LOG, ControllerPrintLog.APP_LIMIT_IP_CONSUME);
+                            ControllerPrintLog.printLog(app, AppPermissionType.APP_CLIENT_IP_LIMIT, ControllerPrintLog.APP_LEVEL_CONSUME_PRINT_LOG, ControllerPrintLog.APP_LIMIT_IP_CONSUME);
                         }
                     }
                     return isAppClientIPLimit;
@@ -76,9 +76,9 @@ public class ControllerService {
                 if (isLimitedBroker) {
                     // 控制服务端日志输出
                     if (type) {
-                        ControllerPrintLog.printLog(topic, ControllerType.TOPIC_BROKER_PERMISSION, ControllerPrintLog.TOPIC_LEVEL_PRODUCE_PRINT_LOG, ControllerPrintLog.TOPIC_BROKER_LIMIT_WRITE);
+                        ControllerPrintLog.printLog(topic, AppPermissionType.TOPIC_BROKER_PERMISSION, ControllerPrintLog.TOPIC_LEVEL_PRODUCE_PRINT_LOG, ControllerPrintLog.TOPIC_BROKER_LIMIT_WRITE);
                     } else {
-                        ControllerPrintLog.printLog(topic, ControllerType.TOPIC_BROKER_PERMISSION, ControllerPrintLog.TOPIC_LEVEL_CONSUME_PRINT_LOG, ControllerPrintLog.TOPIC_BROKER_LIMIT_READ);
+                        ControllerPrintLog.printLog(topic, AppPermissionType.TOPIC_BROKER_PERMISSION, ControllerPrintLog.TOPIC_LEVEL_CONSUME_PRINT_LOG, ControllerPrintLog.TOPIC_BROKER_LIMIT_READ);
                     }
                 }
                 return isLimitedBroker;

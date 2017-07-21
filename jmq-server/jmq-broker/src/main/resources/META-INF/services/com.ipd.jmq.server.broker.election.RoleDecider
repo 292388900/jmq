@@ -1,1 +1,2 @@
 com.ipd.jmq.server.broker.election.FixedRoleDecider
+com.ipd.jmq.server.broker.election.RaftRoleDecider

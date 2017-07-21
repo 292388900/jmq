@@ -1,8 +1,8 @@
 package com.ipd.jmq.common.network;
 
 
-import com.ipd.jmq.common.network.command.Command;
-import com.ipd.jmq.common.network.command.CommandCallback;
+import com.ipd.jmq.common.network.v3.command.Command;
+import com.ipd.jmq.common.network.v3.command.CommandCallback;
 import com.ipd.jmq.toolkit.time.SystemClock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

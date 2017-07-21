@@ -1,7 +1,7 @@
 package com.ipd.jmq.server.broker.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.ipd.jmq.common.model.ControllerInfo;
+import com.ipd.jmq.common.model.AppPermission;
 import com.ipd.jmq.server.broker.context.BrokerContext;
 import com.ipd.jmq.server.context.ContextEvent;
 import com.ipd.jmq.registry.PathData;
@@ -190,9 +190,9 @@ public class ControllerManager extends Service {
         if (logger.isInfoEnabled()) {
             logger.info("update controller.\n" + text);
         }
-        List<ControllerInfo> controllerInfoList;
+        List<AppPermission> controllerInfoList;
         try {
-            controllerInfoList = JSON.parseArray(text, ControllerInfo.class);
+            controllerInfoList = JSON.parseArray(text, AppPermission.class);
         } catch (Exception e) {
             logger.error(String.format("parse controller data error."), e);
             return;
@@ -205,12 +205,12 @@ public class ControllerManager extends Service {
         }
         currentControllerUUIDs.clear();
         Set<String> tmpLastUUIDs = new HashSet<String>();
-        for (ControllerInfo controllerInfo : controllerInfoList) {
+        for (AppPermission controllerInfo : controllerInfoList) {
             String topic = controllerInfo.getTopic();
             String app = controllerInfo.getApp();
             String group = controllerInfo.getGroup();
-            String controllerType = controllerInfo.getControllerType();
-            String controllerContent = controllerInfo.getControllerContent();
+            String controllerType = controllerInfo.getAppPermissionType();
+            String controllerContent = controllerInfo.getAppPermissionContent();
             String uuid = topic + SPECIAL_SPLIT_STRING + app + SPECIAL_SPLIT_STRING + group + SPECIAL_SPLIT_STRING + controllerType;
             String old;
             String combinationInfo = "";

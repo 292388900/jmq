@@ -13,7 +13,7 @@ import com.ipd.jmq.server.broker.cluster.ClusterManager;
 import com.ipd.jmq.server.broker.dispatch.DispatchService;
 import com.ipd.jmq.server.broker.monitor.impl.*;
 import com.ipd.jmq.server.broker.profile.PubSubStat;
-//import com.ipd.jmq.server.broker.retry.RetryManager;
+import com.ipd.jmq.server.broker.retry.RetryManager;
 import com.ipd.jmq.server.store.Store;
 import com.ipd.jmq.server.store.StoreConfig;
 
@@ -46,8 +46,8 @@ public class BrokerMonitor extends BrokerMonitorTool {
     protected ClusterManager clusterManager;
     // 派发管理器
     public DispatchService dispatchService;
-//    // 重试管理
-//    protected RetryManager retryManager;
+    // 重试管理
+    protected RetryManager retryManager;
     // 配置
     protected BrokerConfig brokerConfig;
     // 存储配置
@@ -74,8 +74,9 @@ public class BrokerMonitor extends BrokerMonitorTool {
     protected BrokerExeBuffer brokerExeBuffer;
     // 重试性能统计
     protected RetryPerfBuffer retryPerfBuffer;
-//  RetryManager retryManager,
-    public BrokerMonitor(SessionManager sessionManager, ClusterManager clusterManager, DispatchService dispatchService,BrokerConfig config, ReplicationMaster replicationMaster,long brokerStartTime) {
+
+    public BrokerMonitor(SessionManager sessionManager, ClusterManager clusterManager, DispatchService dispatchService,
+                         RetryManager retryManager, BrokerConfig config, ReplicationMaster replicationMaster) {
         if (sessionManager == null) {
             throw new IllegalArgumentException("sessionManager can not be null");
         }
@@ -85,13 +86,14 @@ public class BrokerMonitor extends BrokerMonitorTool {
         if (dispatchService == null) {
             throw new IllegalArgumentException("dispatchService can not be null");
         }
-//        if (retryManager == null) {
-//            throw new IllegalArgumentException("retryManager can not be null");
-//        }
+        if (retryManager == null) {
+            throw new IllegalArgumentException("retryManager can not be null");
+        }
 
         this.sessionManager = sessionManager;
         this.clusterManager = clusterManager;
         this.dispatchService = dispatchService;
+        this.retryManager = retryManager;
         this.brokerConfig = config;
 
         this.storeConfig = config.getStoreConfig();
@@ -102,10 +104,9 @@ public class BrokerMonitor extends BrokerMonitorTool {
         this.brokerStat = new BrokerStat(broker.getName());
         this.brokerPerfBuffer = new BrokerPerfBuffer(broker.getName(), broker.getGroup());
         this.brokerExeBuffer = new BrokerExeBuffer(broker.getName(), broker.getGroup());
-        this.brokerStartTime = brokerStartTime;
 
         this.partitionMonitor = new PartitionMonitorImpl.Builder(store, brokerConfig).clusterManager(clusterManager).
-                dispatchService(dispatchService).replicationMaster(replicationMaster).
+                dispatchService(dispatchService).retryManager(retryManager).replicationMaster(replicationMaster).
                 brokerStat(brokerStat).brokerExeBuffer(brokerExeBuffer).brokerPerfBuffer(brokerPerfBuffer).
                 pubSubStat(pubSubStat).broker(broker).brokerStartTime(brokerStartTime).build();
         this.topicMonitor = new TopicMonitorImpl.Builder(pubSubStat, retryPerfBuffer).build();
@@ -130,6 +131,7 @@ public class BrokerMonitor extends BrokerMonitorTool {
         perfStatThread = new Thread(new ServiceThread(this) {
             @Override
             protected void execute() throws Exception {
+                logger.info("buffer slice execute!");
                 // 性能切片
                 brokerPerfBuffer.slice();
                 //异常数据切片,不持久化
@@ -243,6 +245,7 @@ public class BrokerMonitor extends BrokerMonitorTool {
                     }
                 }
                 brokerStat = stat;
+                super.partitionMonitor.setBrokerStat(stat);
             }
         } catch (Throwable e) {
             logger.error("load broker stat error.", e);

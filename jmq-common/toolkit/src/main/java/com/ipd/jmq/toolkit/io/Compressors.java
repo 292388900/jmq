@@ -17,7 +17,7 @@ public abstract class Compressors {
      *
      * @param src        字符串
      * @param compressor 压缩器
-     * @throws java.io.IOException
+     * @throws IOException
      */
     public static byte[] compress(final String src, final Compressor compressor) throws IOException {
         return compress(src, Charsets.UTF_8, compressor);
@@ -29,7 +29,7 @@ public abstract class Compressors {
      * @param src        字符串
      * @param charset    字符串
      * @param compressor 压缩器
-     * @throws java.io.IOException
+     * @throws IOException
      */
     public static byte[] compress(final String src, final Charset charset, final Compressor compressor) throws
             IOException {
@@ -86,7 +86,7 @@ public abstract class Compressors {
      *
      * @param buf        缓冲器
      * @param compressor 压缩器
-     * @throws java.io.IOException
+     * @throws IOException
      */
     public static byte[] decompress(final byte[] buf, final Compressor compressor) throws IOException {
         if (buf == null) {
@@ -102,7 +102,7 @@ public abstract class Compressors {
      * @param offset     偏移量
      * @param size       长度
      * @param compressor 压缩器
-     * @throws java.io.IOException
+     * @throws IOException
      */
     public static byte[] decompress(final byte[] buf, final int offset, final int size,
             final Compressor compressor) throws IOException {
@@ -124,7 +124,7 @@ public abstract class Compressors {
      * @param buf        缓冲器
      * @param charset    字符集
      * @param compressor 压缩器
-     * @throws java.io.IOException
+     * @throws IOException
      */
     public static String decompress(final byte[] buf, final Charset charset, final Compressor compressor) throws
             IOException {
@@ -142,7 +142,7 @@ public abstract class Compressors {
      * @param size       长度
      * @param charset    字符集
      * @param compressor 压缩器
-     * @throws java.io.IOException
+     * @throws IOException
      */
     public static String decompress(final byte[] buf, final int offset, final int size, final Charset charset,
                                     final Compressor compressor) throws IOException {

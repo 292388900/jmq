@@ -1,7 +1,5 @@
 package com.ipd.jmq.common.model;
 
-import com.ipd.jmq.common.cluster.ClusterRole;
-
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
@@ -10,27 +8,34 @@ import javax.validation.constraints.Min;
  */
 public class Consumer extends BaseModel {
     // 主题ID
-    private long topicId;
-    // 主题
-    private String topic;
+    private Identity topic;
     // 应用代码
-    private String app;
+    private Identity app;
+
+    public Identity getTopic() {
+        return topic;
+    }
+
+    public void setTopic(Identity topic) {
+        this.topic = topic;
+    }
+
+    public Identity getApp() {
+        return app;
+    }
+
+    public void setApp(Identity app) {
+        this.app = app;
+    }
+
+    //
+    private short version;
     // 是否就近发送
     private boolean nearby;
     // 是否暂停消费
     private boolean paused;
     // 是否需要归档,默认不归档
     private boolean archive;
-    // 是否启用重试服务
-    private boolean retry = true;
-    // 延迟时间
-    private int delay;
-    // 过滤器
-    private String selector;
-    // 消费节点角色
-    private ClusterRole role = ClusterRole.MASTER;
-    // 偏移量管理类型
-    private OffsetMode offsetMode = OffsetMode.REMOTE;
     // 应答超时时间
     @Min(0)
     private int ackTimeout;
@@ -44,48 +49,47 @@ public class Consumer extends BaseModel {
     // 最大重试间隔(默认5分钟)
     @Min(0)
     private int maxRetryDelay;
+    // 是否启用重试服务
+    private boolean retry = true;
     // 重试间隔
     @Min(0)
     private int retryDelay;
-    // 指数增加间隔时间
-    private boolean useExponentialBackOff = true;
-    // 指数系数
-    @Min(0)
-    private double backOffMultiplier;
+    // 指数增加重试间隔时间
+    private boolean useExpBackoff;
+    // 重试指数系数
+    private double backoffMultiplier;
     // 过期时间（默认3天）
     @Min(0)
     private int expireTime;
+    // 延迟时间
+    private int delay;
+    //
+    private int minConcurrent;
+    //
+    private int maxConcurrent;
+    //
+    private int longPull;
+    // 指数增加间隔时间
+    private int pullEmptySleep;
+    // 指数系数
+    @Min(0)
+    private int pullTimeout;
     //单个queue并行消费
-    private boolean concurrentConsume = false;
-    //并行消费单个queue最大并行消息数
-    private int prefetchSize;
+    private int concurrents;
 
     //客户端类型
-    private String clientType;
+    private short clientType;
 
-    public long getTopicId() {
-        return topicId;
+    public OffsetMode getOffsetMode() {
+        return offsetMode;
     }
 
-    public void setTopicId(long topicId) {
-        this.topicId = topicId;
+    public void setOffsetMode(OffsetMode offsetMode) {
+        this.offsetMode = offsetMode;
     }
 
-    public String getTopic() {
-        return topic;
-    }
-
-    public void setTopic(String topic) {
-        this.topic = topic;
-    }
-
-    public String getApp() {
-        return app;
-    }
-
-    public void setApp(String app) {
-        this.app = app;
-    }
+    //偏移量管理类型
+    private OffsetMode offsetMode;
 
     public boolean isNearby() {
         return nearby;
@@ -117,30 +121,6 @@ public class Consumer extends BaseModel {
 
     public void setRetry(boolean retry) {
         this.retry = retry;
-    }
-
-    public String getSelector() {
-        return selector;
-    }
-
-    public void setSelector(String selector) {
-        this.selector = selector;
-    }
-
-    public ClusterRole getRole() {
-        return role;
-    }
-
-    public void setRole(ClusterRole role) {
-        this.role = role;
-    }
-
-    public void setOffsetMode(OffsetMode offsetMode) {
-        this.offsetMode = offsetMode;
-    }
-
-    public OffsetMode getOffsetMode() {
-        return offsetMode;
     }
 
     public int getAckTimeout() {
@@ -183,22 +163,6 @@ public class Consumer extends BaseModel {
         this.retryDelay = retryDelay;
     }
 
-    public boolean isUseExponentialBackOff() {
-        return useExponentialBackOff;
-    }
-
-    public void setUseExponentialBackOff(boolean useExponentialBackOff) {
-        this.useExponentialBackOff = useExponentialBackOff;
-    }
-
-    public double getBackOffMultiplier() {
-        return backOffMultiplier;
-    }
-
-    public void setBackOffMultiplier(double backOffMultiplier) {
-        this.backOffMultiplier = backOffMultiplier;
-    }
-
     public int getExpireTime() {
         return expireTime;
     }
@@ -215,27 +179,83 @@ public class Consumer extends BaseModel {
         this.delay = delay;
     }
 
-    public boolean isConcurrentConsume() {
-        return concurrentConsume;
+    public short getVersion() {
+        return version;
     }
 
-    public void setConcurrentConsume(boolean concurrentConsume) {
-        this.concurrentConsume = concurrentConsume;
+    public void setVersion(short version) {
+        this.version = version;
     }
 
-    public int getPrefetchSize() {
-        return prefetchSize;
+    public boolean isUseExpBackoff() {
+        return useExpBackoff;
     }
 
-    public void setPrefetchSize(int prefetchSize) {
-        this.prefetchSize = prefetchSize;
+    public void setUseExpBackoff(boolean useExpBackoff) {
+        this.useExpBackoff = useExpBackoff;
     }
 
-    public String getClientType() {
+    public double getBackoffMultiplier() {
+        return backoffMultiplier;
+    }
+
+    public void setBackoffMultiplier(double backoffMultiplier) {
+        this.backoffMultiplier = backoffMultiplier;
+    }
+
+    public int getMinConcurrent() {
+        return minConcurrent;
+    }
+
+    public void setMinConcurrent(int minConcurrent) {
+        this.minConcurrent = minConcurrent;
+    }
+
+    public int getMaxConcurrent() {
+        return maxConcurrent;
+    }
+
+    public void setMaxConcurrent(int maxConcurrent) {
+        this.maxConcurrent = maxConcurrent;
+    }
+
+    public int getLongPull() {
+        return longPull;
+    }
+
+    public void setLongPull(int longPull) {
+        this.longPull = longPull;
+    }
+
+    public int getPullEmptySleep() {
+        return pullEmptySleep;
+    }
+
+    public void setPullEmptySleep(int pullEmptySleep) {
+        this.pullEmptySleep = pullEmptySleep;
+    }
+
+    public int getPullTimeout() {
+        return pullTimeout;
+    }
+
+    public void setPullTimeout(int pullTimeout) {
+        this.pullTimeout = pullTimeout;
+    }
+
+    public int getConcurrents() {
+        return concurrents;
+    }
+
+    public void setConcurrents(int concurrents) {
+        this.concurrents = concurrents;
+    }
+
+    public short getClientType() {
         return clientType;
     }
 
-    public void setClientType(String clientType) {
+    public void setClientType(short clientType) {
         this.clientType = clientType;
     }
 }

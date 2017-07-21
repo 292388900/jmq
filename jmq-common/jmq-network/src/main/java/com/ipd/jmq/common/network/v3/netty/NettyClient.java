@@ -1,6 +1,5 @@
 package com.ipd.jmq.common.network.v3.netty;
 
-import com.ipd.jmq.common.network.netty.AbstractClient;
 import com.ipd.jmq.common.network.v3.codec.JMQCodec;
 import com.ipd.jmq.common.network.ClientConfig;
 import com.ipd.jmq.common.network.CommandHandlerFactory;

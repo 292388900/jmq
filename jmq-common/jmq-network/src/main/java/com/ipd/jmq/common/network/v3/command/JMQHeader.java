@@ -1,8 +1,6 @@
 package com.ipd.jmq.common.network.v3.command;
 
 import com.ipd.jmq.common.model.Acknowledge;
-import com.ipd.jmq.common.network.command.Direction;
-import com.ipd.jmq.common.network.command.Header;
 import com.ipd.jmq.toolkit.time.SystemClock;
 
 import java.util.concurrent.atomic.AtomicInteger;

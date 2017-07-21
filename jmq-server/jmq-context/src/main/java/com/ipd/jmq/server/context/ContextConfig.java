@@ -1,6 +1,7 @@
 package com.ipd.jmq.server.context;
 
 import com.ipd.jmq.registry.Registry;
+import com.ipd.jmq.registry.RegistryFactory;
 
 /**
  * 上下文配置
@@ -15,6 +16,8 @@ public class ContextConfig {
     protected boolean compressed;
     // 注册中心
     private Registry registry;
+
+    private RegistryFactory registryFactory;
 
     private String key;
 
@@ -57,5 +60,15 @@ public class ContextConfig {
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    public void setRegistryFactory(RegistryFactory registryFactory) {
+        this.registryFactory = registryFactory;
+        try{
+            this.registry=registryFactory.create();
+        }catch(Exception e){
+
+        }
+
     }
 }

@@ -21,7 +21,7 @@ import com.ipd.jmq.common.network.v3.session.TransactionId;
 import com.ipd.jmq.common.network.FailoverState;
 import com.ipd.jmq.common.network.TransportException;
 import com.ipd.jmq.common.model.Acknowledge;
-import com.ipd.jmq.common.network.command.Command;
+import com.ipd.jmq.common.network.v3.command.Command;
 import com.ipd.jmq.toolkit.service.Service;
 import com.ipd.jmq.toolkit.time.SystemClock;
 import org.slf4j.Logger;
@@ -90,6 +90,10 @@ public class MessageProducer extends Service implements Producer {
             return;
         }
         this.feedbackManager = feedbackManager;
+    }
+
+    public ProducerConfig getConfig(){
+        return config;
     }
 
     @Override

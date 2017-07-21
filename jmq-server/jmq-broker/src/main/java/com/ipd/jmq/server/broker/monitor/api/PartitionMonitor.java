@@ -72,4 +72,8 @@ public interface PartitionMonitor {
      * @return
      */
     String getStoreConfig();
+    /**
+     *
+     */
+    void setBrokerStat(BrokerStat brokerStat);
 }

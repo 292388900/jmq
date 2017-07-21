@@ -2,41 +2,43 @@ package com.ipd.jmq.server.broker.cluster;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
-import com.ipd.jmq.common.cache.CacheCluster;
 import com.ipd.jmq.common.cluster.*;
 import com.ipd.jmq.common.exception.JMQCode;
 import com.ipd.jmq.common.exception.JMQException;
 import com.ipd.jmq.common.lb.ClientType;
 import com.ipd.jmq.common.lb.TopicLoad;
-import com.ipd.jmq.common.model.DataCenter;
 import com.ipd.jmq.common.model.DynamicClientConfig;
-import com.ipd.jmq.registry.listener.PathEvent;
-import com.ipd.jmq.registry.listener.PathListener;
-import com.ipd.jmq.server.broker.BrokerConfig;
-import com.ipd.jmq.server.broker.utils.BrokerUtils;
-import com.ipd.jmq.server.broker.controller.ControllerService;
-import com.ipd.jmq.server.broker.monitor.BrokerMonitor;
-//import com.ipd.jmq.server.broker.retry.RetryConfig;
-import com.ipd.jmq.server.store.StoreConfig;
 import com.ipd.jmq.common.network.ServerConfig;
 import com.ipd.jmq.registry.PathData;
 import com.ipd.jmq.registry.Registry;
 import com.ipd.jmq.registry.RegistryException;
+import com.ipd.jmq.registry.listener.PathEvent;
+import com.ipd.jmq.registry.listener.PathListener;
 import com.ipd.jmq.registry.util.Path;
+import com.ipd.jmq.server.broker.BrokerConfig;
+import com.ipd.jmq.server.broker.controller.ControllerService;
+import com.ipd.jmq.server.broker.monitor.BrokerMonitor;
+import com.ipd.jmq.server.broker.retry.RetryConfig;
+import com.ipd.jmq.server.broker.utils.BrokerUtils;
+import com.ipd.jmq.server.store.StoreConfig;
 import com.ipd.jmq.toolkit.concurrent.EventBus;
-import com.ipd.jmq.toolkit.concurrent.EventListener;
 import com.ipd.jmq.toolkit.io.Compressors;
 import com.ipd.jmq.toolkit.io.Zip;
+import com.ipd.jmq.toolkit.network.Ipv4;
+import com.ipd.jmq.toolkit.network.Lan;
 import com.ipd.jmq.toolkit.retry.RetryPolicy;
 import com.ipd.jmq.toolkit.service.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.SocketException;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import  com.ipd.jmq.toolkit.concurrent.EventListener;
 
 /**
  * 集群管理
@@ -49,6 +51,7 @@ public class ClusterManager extends Service {
     public static final String LOCAL_CONFIG_DIR = "configs";
     private static final int WEIGHT_TOTAL = 100;
 
+    // 注册中心
     private Registry registry;
     // 配置
     private BrokerConfig config;
@@ -77,7 +80,7 @@ public class ClusterManager extends Service {
     // 重试服务地址
     private Set<String> retryAddresses = new HashSet<String>();
     // 直连重试服务地址
-//    private Set<String> fixRetryAddresses = new HashSet<String>();
+    private Set<String> fixRetryAddresses = new HashSet<String>();
     // Broker 监控接口
     private BrokerMonitor brokerMonitor;
     // Broker配置信息文件
@@ -95,7 +98,7 @@ public class ClusterManager extends Service {
     // 顺序消息管理器
     private SequentialManager sequentialManager;
     // 负载均衡结果
-    private CacheCluster cacheService;
+//    private CacheService cacheService;
 
     private boolean loadBrokers = false;
     private boolean loadTopics = false;
@@ -113,7 +116,11 @@ public class ClusterManager extends Service {
         // 构造本地Broker
         ServerConfig serverConfig = config.getServerConfig();
         int port = serverConfig.getPort();
-        broker = new Broker(serverConfig.getIp(), port, null);
+        try {
+            broker = new Broker("".equals(serverConfig.getIp())? Ipv4.getLocalIp():serverConfig.getIp(), port, null);
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
         String group = config.getGroup();
         if (group != null && !group.isEmpty()) {
             broker.setGroup(group);
@@ -264,9 +271,9 @@ public class ClusterManager extends Service {
 
         controllerService = new ControllerService(config.getTopicControllerPolicyMap(), config.getAppControllerPolicyMap());
 
-//        // 设置直连重试地址
-//        RetryConfig retryConfig = config.getRetryConfig();
-//        fixRetryAddresses = retryConfig.getFixAddresses();
+        // 设置直连重试地址
+        RetryConfig retryConfig = config.getRetryConfig();
+        fixRetryAddresses = retryConfig.getFixAddresses();
 
         eventManager.start();
         eventManager.addListener(new EventListener<ClusterEvent>() {
@@ -309,9 +316,9 @@ public class ClusterManager extends Service {
         registry.addListener(config.getTopicPath(), topicListener);
         registry.addListener(config.getDataCenterPath(), dataCenterListener);
 
-        if (null == cacheService) {
-            cacheService = config.getCacheService();
-        }
+//        if (null == cacheService) {
+//            cacheService = config.getCacheService();
+//        }
 
         logger.info("cluster manager is started");
     }
@@ -488,7 +495,11 @@ public class ClusterManager extends Service {
         List<DataCenter> dataCenters = getDataCenters();
         if (dataCenters != null && !dataCenters.isEmpty()) {
             for (DataCenter dataCenter : dataCenters) {
-                if (dataCenter.match(clientIp)) {
+                Lan lan = new Lan("");
+//                if (dataCenter.match(clientIp)) {
+//                    return dataCenter;
+//                }
+                if (lan.contains(clientIp)){
                     return dataCenter;
                 }
             }
@@ -706,11 +717,15 @@ public class ClusterManager extends Service {
         } else if (logger.isDebugEnabled()) {
             logger.debug("update topic config." + content);
         }
-        List<TopicConfig> configs = JSON.parseArray(content, TopicConfig.class);
-        updateTopic(configs);
-        // 缓存topic到本地
-        if (config.isUseLocalConfig()) {
-            saveTopics(content);
+        try {
+            List<TopicConfig> configs = JSON.parseArray(content, TopicConfig.class);
+            updateTopic(configs);
+            // 缓存topic到本地
+            if (config.isUseLocalConfig()) {
+                saveTopics(content);
+            }
+        } catch (Exception e) {
+            logger.warn("update topic config cause error, the content:{}",content);
         }
     }
 
@@ -750,10 +765,14 @@ public class ClusterManager extends Service {
         } else if (logger.isDebugEnabled()) {
             logger.debug("update broker." + content);
         }
-        List<Broker> brokers = JSON.parseArray(content, Broker.class);
-        updateBroker(brokers);
-        if (config.isUseLocalConfig()) {
-            saveBrokers(content);
+        try {
+            List<Broker> brokers = JSON.parseArray(content, Broker.class);
+            updateBroker(brokers);
+            if (config.isUseLocalConfig()) {
+                saveBrokers(content);
+            }
+        } catch (Exception e) {
+            logger.warn("update broker config cause error, the content:{}",content);
         }
     }
 
@@ -802,7 +821,7 @@ public class ClusterManager extends Service {
             return;
         }
         Broker source = this.broker;
-//        Set<String> retryAddresses = new HashSet<String>();
+        Set<String> retryAddresses = new HashSet<String>();
         Map<String, Broker> brokerMap = new HashMap<String, Broker>(brokers.size());
         Map<String, BrokerGroup> groupMap = new HashMap<String, BrokerGroup>(brokers.size());
         BrokerGroup group;
@@ -830,6 +849,7 @@ public class ClusterManager extends Service {
                 source.setGroup(broker.getGroup());
                 source.setAlias(broker.getAlias());
                 source.setDataCenter(broker.getDataCenter());
+                source.setSyncMode(broker.getSyncMode());
                 source.setRetryType(broker.getRetryType());
                 //broker的角色会随着选举发生变化（registry模式下），不能以db中的为准
                 //source.setRole(broker.getRole());
@@ -840,9 +860,9 @@ public class ClusterManager extends Service {
                 isMatch = true;
             }
             // 重试服务，过滤掉停用的服务
-//            if (broker.getRetryType() == RetryType.DB && broker.getPermission() != Permission.NONE) {
-//                retryAddresses.add(broker.getName());
-//            }
+            if (broker.getRetryType() == RetryType.DB && broker.getPermission() != Permission.NONE) {
+                retryAddresses.add(broker.getName());
+            }
         }
         if (!isMatch) {
             logger.error(String.format("broker config maybe error,can not find %s", this.broker));
@@ -854,12 +874,12 @@ public class ClusterManager extends Service {
         this.groups = groupMap;
         this.clusters = new ConcurrentHashMap<String, BrokerCluster>();
         // 判断是否使用直连重试地址
-//        retryAddresses = fixRetryAddresses != null && !fixRetryAddresses.isEmpty() ? fixRetryAddresses : retryAddresses;
-//        // 重试服务地址发生变更
-//        if (!retryAddresses.equals(this.retryAddresses)) {
-//            this.retryAddresses = retryAddresses;
-//            eventManager.add(new RetryEvent(retryAddresses));
-//        }
+        retryAddresses = fixRetryAddresses != null && !fixRetryAddresses.isEmpty() ? fixRetryAddresses : retryAddresses;
+        // 重试服务地址发生变更
+        if (!retryAddresses.equals(this.retryAddresses)) {
+            this.retryAddresses = retryAddresses;
+            eventManager.add(new RetryEvent(retryAddresses));
+        }
 
         eventManager.add(new UpdateNotifyEvent(ClusterEvent.EventType.ALL_BROKER_UPDATE));
     }
@@ -1064,8 +1084,8 @@ public class ClusterManager extends Service {
             for (BrokerGroup brokerGroup : cluster.getGroups()) {
                 Permission groupPermission = Permission.NONE;
 
-                if (null != cacheService) {
-                    String topicLoadString = cacheService.get(topic + "." + app);
+               // if (null != cacheService) {
+                    String topicLoadString = "";//cacheService.get(topic + "." + app);
                     if (null != topicLoadString && !topicLoadString.isEmpty()) {
                         TopicLoad topicLoad = JSON.parseObject(topicLoadString, TopicLoad.class);
                         for (String group : topicLoad.getLoads().keySet()) {
@@ -1082,7 +1102,7 @@ public class ClusterManager extends Service {
                             }
                         }
                     }
-                }
+                //}
 
                 // 遍历Broker，判断权限
                 for (Broker broker : brokerGroup.getBrokers()) {
@@ -1111,11 +1131,11 @@ public class ClusterManager extends Service {
             }
         }
 
-        // load balance
-        if (config.isOpenLoadBalance() && null != cacheService) {
+        // load balance&& null != cacheService
+        if (config.isOpenLoadBalance() ) {
             for (BrokerCluster cluster : result) {
                 String topic = cluster.getTopic();
-                String topicLoadString = cacheService.get(topic + "." + app);
+                String topicLoadString ="";// cacheService.get(topic + "." + app);
                 if (null != topicLoadString && !topicLoadString.isEmpty()) {
                     String producerSession = topic + "-PRODUCER";
                     String consumerSession = topic + "-CONSUMER";

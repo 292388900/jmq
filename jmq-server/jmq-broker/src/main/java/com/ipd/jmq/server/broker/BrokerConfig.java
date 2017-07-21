@@ -1,23 +1,25 @@
 package com.ipd.jmq.server.broker;
 
-import com.ipd.jmq.common.cache.CacheCluster;
-import com.ipd.jmq.common.network.v3.netty.NettyClient;
-import com.ipd.jmq.toolkit.security.auth.Authentication;
+import com.ipd.jmq.common.network.v3.netty.NettyClient;;
+import com.ipd.jmq.registry.RegistryFactory;
 import com.ipd.jmq.replication.ReplicationConfig;
 import com.ipd.jmq.server.broker.context.BrokerContext;
 import com.ipd.jmq.server.broker.offset.OffsetConfig;
 import com.ipd.jmq.server.context.ContextEvent;
 import com.ipd.jmq.server.broker.controller.ControllerPolicy;
-import com.ipd.jmq.server.broker.controller.ControllerType;
+import com.ipd.jmq.server.broker.controller.AppPermissionType;
 import com.ipd.jmq.server.broker.profile.ClientStatConfig;
+import com.ipd.jmq.server.broker.retry.RetryConfig;
 import com.ipd.jmq.server.store.Store;
 import com.ipd.jmq.server.store.StoreConfig;
-import com.ipd.jmq.server.store.StoreService;
 import com.ipd.jmq.common.network.Config;
 import com.ipd.jmq.common.network.ServerConfig;
 import com.ipd.jmq.registry.Registry;
+import com.ipd.jmq.toolkit.cache.CacheCluster;
 import com.ipd.jmq.toolkit.concurrent.EventListener;
 import com.ipd.jmq.toolkit.retry.RetryPolicy;
+import com.ipd.jmq.toolkit.security.Encrypt;
+import com.ipd.jmq.toolkit.security.auth.Authentication;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +52,7 @@ public class BrokerConfig implements EventListener<ContextEvent> {
     protected String webRegistryURL;
     // 注册中心管理
     protected transient Registry registry;
+    protected RegistryFactory registryFactory;
     // 当前分组
     protected String group;
     // 授权管理
@@ -58,7 +61,8 @@ public class BrokerConfig implements EventListener<ContextEvent> {
     protected String adminUser;
     // 管理员密码
     protected String adminPassword;
-
+    // 重试消息配置
+    protected RetryConfig retryConfig;
     // 缓存服务
     protected transient CacheCluster cacheService;
     // 角色决策者
@@ -164,7 +168,7 @@ public class BrokerConfig implements EventListener<ContextEvent> {
     // 应用级别控制策略, key:topic+@+app,添加特殊字符串防止topic与app组合有重复的
     protected Map<String, ControllerPolicy> appControllerPolicyMap =
             new HashMap<String, ControllerPolicy>();
-    private String encryptKey = "example";
+    private String encryptKey = Encrypt.DEFAULT_KEY;
     private int checkMasterDeadCount = 3;
 
     // kafka相关配置
@@ -176,11 +180,16 @@ public class BrokerConfig implements EventListener<ContextEvent> {
     protected int defaultMaxMetadataSize = 4096;
     // 更新缓存时间间隔
     protected int updataKafkaCachePeriod = 10;
-
-    public BrokerConfig store(StoreService store) {
-        setStore(store);
-        return this;
-    }
+    // 加入组最小会话超时
+    protected int minSessionTimeoutMs = 6000;
+    // 加入组最大会话超时
+    protected int maxSessionTimeoutMs = 30000;
+    // offset同步时间间隔
+    protected int offsetSyncInterval = 60000;
+    // offset metadata最大长度
+    protected int maxMetadataSize = 4096;
+    // offset cache保留时间
+    protected long offsetCacheRetainTime = 1000 * 60 * 60;
 
     public String getEncryptKey() {
         return encryptKey;
@@ -234,10 +243,6 @@ public class BrokerConfig implements EventListener<ContextEvent> {
 
     public Store getStore() {
         return store;
-    }
-
-    public void setStore(StoreService store) {
-        this.store = store;
     }
 
     public String getRegistryUrl() {
@@ -294,6 +299,14 @@ public class BrokerConfig implements EventListener<ContextEvent> {
 
     public void setAdminPassword(String adminPassword) {
         this.adminPassword = adminPassword;
+    }
+
+    public RetryConfig getRetryConfig() {
+        return retryConfig;
+    }
+
+    public void setRetryConfig(RetryConfig retryConfig) {
+        this.retryConfig = retryConfig;
     }
 
     public CacheCluster getCacheService() {
@@ -799,13 +812,53 @@ public class BrokerConfig implements EventListener<ContextEvent> {
     public void setDefaultMaxMetadataSize(int defaultMaxMetadataSize) {
         this.defaultMaxMetadataSize = defaultMaxMetadataSize;
     }
+    public void setRegistryFactory(RegistryFactory registryFactory) {
+        this.registryFactory = registryFactory;
+        try{
+            this.registry=registryFactory.create();
+        }catch(Exception e){
+            //
+        }
 
+    }
     public int getUpdataKafkaCachePeriod() {
         return updataKafkaCachePeriod;
     }
 
     public void setUpdataKafkaCachePeriod(int updataKafkaCachePeriod) {
         this.updataKafkaCachePeriod = updataKafkaCachePeriod;
+    }
+
+    public int getMinSessionTimeoutMs() {
+        return minSessionTimeoutMs;
+    }
+
+    public int getMaxSessionTimeoutMs() {
+        return maxSessionTimeoutMs;
+    }
+
+    public int getOffsetSyncInterval() {
+        return offsetSyncInterval;
+    }
+
+    public void setOffsetSyncInterval(int offsetSyncInterval) {
+        this.offsetSyncInterval = offsetSyncInterval;
+    }
+
+    public int getMaxMetadataSize() {
+        return maxMetadataSize;
+    }
+
+    public void setMaxMetadataSize(int maxMetadataSize) {
+        this.maxMetadataSize = maxMetadataSize;
+    }
+
+    public long getOffsetCacheRetainTime() {
+        return offsetCacheRetainTime;
+    }
+
+    public void setOffsetCacheRetainTime(long offsetCacheRetainTime) {
+        this.offsetCacheRetainTime = offsetCacheRetainTime;
     }
 
     @Override
@@ -828,9 +881,9 @@ public class BrokerConfig implements EventListener<ContextEvent> {
         } else if (group != null && group.equals(ContextEvent.HA_GROUP)) {
             // TODO replication config event
         } else if (group != null && group.equals(ContextEvent.RETRY_SERVER_GROUP)) {
-//            if (retryConfig != null) {
-//                retryConfig.onEvent(event);
-//            }
+            if (retryConfig != null) {
+                retryConfig.onEvent(event);
+            }
         } else if (group != null && group.equals(BrokerContext.NETTY_SERVER_GROUP)) {
             if (serverConfig != null) {
                 ServerConfig nsConfig = this.serverConfig;
@@ -897,10 +950,10 @@ public class BrokerConfig implements EventListener<ContextEvent> {
             }
         } else if (group != null && group.equals(BrokerContext.CONTROL_GROUP)) {
             if (BrokerContext.BROKER_TOPIC_CONTROLLER_PERMISSION.equals(key)) {
-                ControllerPolicy controllerPolicy = new ControllerPolicy(ControllerType.TOPIC_BROKER_PERMISSION, value, this.group);
+                ControllerPolicy controllerPolicy = new ControllerPolicy(AppPermissionType.TOPIC_BROKER_PERMISSION, value, this.group);
                 topicControllerPolicyMap.put(controllerPolicy.getTopic(), controllerPolicy);
             } else if (BrokerContext.BROKER_APP_CONTROLLER_CLIENTIP.equals(key)) {
-                ControllerPolicy controllerPolicy = new ControllerPolicy(ControllerType.APP_CLIENT_IP_LIMIT, value, this.group);
+                ControllerPolicy controllerPolicy = new ControllerPolicy(AppPermissionType.APP_CLIENT_IP_LIMIT, value, this.group);
                 appControllerPolicyMap.put(controllerPolicy.getTopic() + "@" + controllerPolicy.getApp(), controllerPolicy);
             } else if (BrokerContext.DELETE_OLD_TOPIC_CONTROLLER_DATA.equals(key)) {
                 topicControllerPolicyMap.remove(value);

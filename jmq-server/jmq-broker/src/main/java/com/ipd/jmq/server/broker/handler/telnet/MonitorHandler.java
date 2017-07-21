@@ -3,21 +3,21 @@ package com.ipd.jmq.server.broker.handler.telnet;
 import com.alibaba.fastjson.JSONObject;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
-import com.ipd.jmq.common.network.protocol.telnet.TelnetHandler;
-import com.ipd.jmq.common.network.protocol.telnet.TelnetHeader;
-import com.ipd.jmq.common.network.protocol.telnet.TelnetRequest;
-import com.ipd.jmq.common.network.protocol.telnet.TelnetResponse;
-import com.ipd.jmq.common.network.command.telnet.Commands;
-import com.ipd.jmq.common.network.command.telnet.TelnetCode;
-import com.ipd.jmq.common.network.command.telnet.TelnetResult;
+import com.ipd.jmq.common.network.v3.command.Command;
 import com.ipd.jmq.common.network.v3.netty.telnet.base.TelnetChannelHandler;
 import com.ipd.jmq.common.network.v3.netty.telnet.param.MonitorParam;
+import com.ipd.jmq.common.network.v3.protocol.telnet.TelnetHandler;
+import com.ipd.jmq.common.network.v3.protocol.telnet.TelnetHeader;
+import com.ipd.jmq.common.network.v3.protocol.telnet.TelnetRequest;
+import com.ipd.jmq.common.network.v3.protocol.telnet.TelnetResponse;
+import com.ipd.jmq.common.telnet.Commands;
+import com.ipd.jmq.common.telnet.TelnetCode;
+import com.ipd.jmq.common.telnet.TelnetResult;
 import com.ipd.jmq.server.broker.handler.telnet.utils.ReflectUtils;
 import com.ipd.jmq.server.broker.handler.telnet.utils.TelnetMap;
 import com.ipd.jmq.server.broker.monitor.BrokerMonitor;
 import com.ipd.jmq.common.network.Transport;
 import com.ipd.jmq.common.network.TransportException;
-import com.ipd.jmq.common.network.command.Command;
 import com.ipd.jmq.toolkit.lang.Preconditions;
 
 import java.lang.reflect.Field;
@@ -36,7 +36,7 @@ public class MonitorHandler implements TelnetHandler<Transport> {
     private String adminPassword;
 
     protected BrokerMonitor brokerMonitor;
-
+    public MonitorHandler(){}
     public MonitorHandler(BrokerMonitor brokerMonitor, String adminUser, String adminPassword) {
         Preconditions.checkArgument(brokerMonitor != null, "brokerMonitor can not be null");
         Preconditions.checkArgument(adminUser != null, "adminUser can not be null");
@@ -44,6 +44,18 @@ public class MonitorHandler implements TelnetHandler<Transport> {
         this.brokerMonitor = brokerMonitor;
         this.adminPassword = adminPassword;
         this.adminUser = adminUser;
+    }
+
+    public void setBrokerMonitor(BrokerMonitor brokerMonitor) {
+        this.brokerMonitor = brokerMonitor;
+    }
+
+    public void setAdminUser(String adminUser) {
+        this.adminUser = adminUser;
+    }
+
+    public void setAdminPassword(String adminPassword) {
+        this.adminPassword = adminPassword;
     }
 
     @Override

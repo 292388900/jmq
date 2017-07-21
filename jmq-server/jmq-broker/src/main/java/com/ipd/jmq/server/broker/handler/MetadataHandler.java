@@ -5,13 +5,10 @@ import com.ipd.jmq.common.cluster.BrokerCluster;
 import com.ipd.jmq.common.cluster.TopicConfig;
 import com.ipd.jmq.common.exception.JMQCode;
 import com.ipd.jmq.common.exception.JMQException;
-import com.ipd.jmq.common.model.DataCenter;
+import com.ipd.jmq.common.cluster.DataCenter;
 import com.ipd.jmq.common.model.DynamicClientConfig;
 import com.ipd.jmq.common.network.v3.codec.encode.GetClusterAckEncoder;
-import com.ipd.jmq.common.network.v3.command.CmdTypes;
-import com.ipd.jmq.common.network.v3.command.GetCluster;
-import com.ipd.jmq.common.network.v3.command.GetClusterAck;
-import com.ipd.jmq.common.network.v3.command.JMQHeader;
+import com.ipd.jmq.common.network.v3.command.*;
 import com.ipd.jmq.server.broker.BrokerConfig;
 import com.ipd.jmq.server.broker.SessionManager;
 import com.ipd.jmq.server.broker.cluster.ClusterEvent;
@@ -19,8 +16,6 @@ import com.ipd.jmq.server.broker.cluster.ClusterManager;
 import com.ipd.jmq.server.broker.monitor.BrokerMonitor;
 import com.ipd.jmq.common.network.Transport;
 import com.ipd.jmq.common.network.TransportException;
-import com.ipd.jmq.common.network.command.Command;
-import com.ipd.jmq.common.network.command.Direction;
 import com.ipd.jmq.toolkit.concurrent.EventListener;
 import com.ipd.jmq.toolkit.lang.Charsets;
 import com.ipd.jmq.toolkit.lang.Preconditions;
@@ -46,7 +41,7 @@ public class MetadataHandler extends AbstractHandler implements JMQHandler {
     private ConcurrentHashMap<String, Boolean> calculatingAppSet = new ConcurrentHashMap<String, Boolean>();
     private ThreadPoolExecutor calcClusterLargeBodyThreadPool = new ThreadPoolExecutor(2, 2, 0, TimeUnit.SECONDS, new ArrayBlockingQueue(1000));
     private GetClusterAckEncoder encoder = new GetClusterAckEncoder();
-
+    public MetadataHandler(){}
     public MetadataHandler(final ExecutorService executorService, final SessionManager sessionManager, final ClusterManager
             clusterManager, final BrokerConfig config, final BrokerMonitor brokerMonitor) {
         Preconditions.checkArgument(config != null, "config can not be null");
@@ -89,6 +84,47 @@ public class MetadataHandler extends AbstractHandler implements JMQHandler {
                 }
             }
         });
+    }
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
+    }
+    public void setSessionManager(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
+    }
+    public void setClusterManager(ClusterManager clusterManager) {
+        this.broker = clusterManager.getBroker();
+        this.clusterManager = clusterManager;
+        clusterManager.addListener(new EventListener<ClusterEvent>() {
+            @Override
+            public void onEvent(ClusterEvent event) {
+                switch (event.getType()) {
+                    case ALL_BROKER_UPDATE:
+                    case ALL_TOPIC_UPDATE:
+                    case ALL_SLAVECONSUME_UPDATE:
+                        int calcCount = 0;
+                        for (String key : cacheClusterBody.keySet()) {
+                            TimeWrapperObj obj = cacheClusterBody.get(key);
+                            if (obj == null || ((byte[]) obj.getObj()).length < config.getClusterLargeBodySizeThreshold())
+                                continue;
+                            int dataCenterSplitIndex = key.indexOf(':');
+                            if (dataCenterSplitIndex < 0)
+                                continue;
+                            long dataCenterId = Long.parseLong(key.substring(0, dataCenterSplitIndex));
+                            String app = key.substring(dataCenterSplitIndex + 1, key.indexOf(':', dataCenterSplitIndex + 1));
+                            if (!addCalcClusterBodyTask(dataCenterId, app, key, new GetClusterAck(), true))
+                                break;
+                            ++calcCount;
+                        }
+                        logger.info("on event {} recalculate cacheClusterBody (total={}, calc={})",
+                                event.getType() == ClusterEvent.EventType.ALL_BROKER_UPDATE ? "ALL_BROKER_UPDATE" : "ALL_TOPIC_UPDATE", cacheClusterBody.size(), calcCount);
+                        break;
+                }
+            }
+        });
+    }
+
+    public void setConfig(BrokerConfig config) {
+        this.config = config;
     }
 
     private boolean addCalcClusterBodyTask(final long dataCenterId, final String app, final String key, final GetClusterAck getClusterAck, final boolean flush) {

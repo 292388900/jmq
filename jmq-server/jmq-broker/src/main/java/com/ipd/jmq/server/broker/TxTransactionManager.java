@@ -8,14 +8,13 @@ import com.ipd.jmq.common.network.v3.command.*;
 import com.ipd.jmq.common.network.v3.session.Producer;
 import com.ipd.jmq.common.network.v3.session.ProducerId;
 import com.ipd.jmq.common.network.v3.session.TransactionId;
+import com.ipd.jmq.server.broker.archive.ArchiveManager;
 import com.ipd.jmq.server.broker.cluster.ClusterManager;
 import com.ipd.jmq.server.broker.monitor.BrokerMonitor;
 import com.ipd.jmq.server.store.GetTxResult;
 import com.ipd.jmq.server.store.Store;
 import com.ipd.jmq.common.network.Transport;
-import com.ipd.jmq.common.network.command.Command;
-import com.ipd.jmq.common.network.command.CommandCallback;
-import com.ipd.jmq.common.network.command.Direction;
+import com.ipd.jmq.server.store.StoreContext;
 import com.ipd.jmq.toolkit.lang.Preconditions;
 import com.ipd.jmq.toolkit.service.Service;
 import com.ipd.jmq.toolkit.service.ServiceThread;
@@ -40,13 +39,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TxTransactionManager extends Service {
     protected static Logger logger = LoggerFactory.getLogger(TxTransactionManager.class);
     protected BrokerMonitor brokerMonitor;
-//    protected ArchiveManager archiveManager;
+    protected ArchiveManager archiveManager;
     protected ClusterManager clusterManager;
     private ExecutorService executorService;
     private SessionManager sessionManager;
     private TxQueryManager queryManager;
     private Store store;
-
+    public TxTransactionManager(){}
+    public TxTransactionManager(BrokerConfig config){
+        store = config.getStore();
+    }
     public TxTransactionManager(ClusterManager clusterManager, BrokerConfig config,
                                 BrokerMonitor brokerMonitor,
                                 ExecutorService executorService, SessionManager sessionManager) {
@@ -64,6 +66,27 @@ public class TxTransactionManager extends Service {
         this.sessionManager = sessionManager;
         this.executorService = executorService;
     }
+
+    public void setArchiveManager(ArchiveManager archiveManager) {
+        this.archiveManager = archiveManager;
+    }
+
+    public void setBrokerMonitor(BrokerMonitor brokerMonitor) {
+        this.brokerMonitor = brokerMonitor;
+    }
+
+    public void setClusterManager(ClusterManager clusterManager) {
+        this.clusterManager = clusterManager;
+    }
+
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
+    }
+
+    public void setSessionManager(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
+    }
+
 
     public void doStart() throws Exception {
         queryManager = new TxQueryManager();
@@ -175,15 +198,21 @@ public class TxTransactionManager extends Service {
             return ;
         }
         // TODO 处理回调
-        store.putJournalLogs(messages);
-        TopicConfig config = clusterManager.getTopicConfig(messages.get(0).getTopic());
-        //TODO 归档
-        if (config.isArchive()) { //归档
-            for (BrokerMessage message : messages) {
-                //archiveManager.writeProduce(message);
+        String topic = messages.get(0).getTopic();
+        TopicConfig config = clusterManager.getTopicConfig(topic);
+        final boolean isArchive = config.isArchive();
+        StoreContext storeContext = new StoreContext(topic, messages.get(0).getApp(), messages, new Store.ProcessedCallback() {
+            @Override
+            public void onProcessed(StoreContext context) {
+                //TODO 归档
+                if (isArchive && context.getResult().getCode() == JMQCode.SUCCESS) { //归档
+                    for (BrokerMessage message : messages) {
+                        archiveManager.writeProduce(message);
+                    }
+                }
             }
-        }
-
+        });
+        store.putJournalLogs(storeContext);
     }
 
 

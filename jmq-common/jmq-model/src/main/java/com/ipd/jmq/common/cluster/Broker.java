@@ -54,9 +54,21 @@ public class Broker implements Serializable, Comparable<Broker> {
     // 复制端口
     private transient int replicationPort;
     // 名称
+    @Deprecated
     private transient String name;
     // 分组
     private transient String group;
+
+    private long shardId;
+
+    public long getShardId() {
+        return shardId;
+    }
+
+    public void setShardId(long shardId) {
+        this.shardId = shardId;
+    }
+
     // 别名
     private String alias;
     // 类型
@@ -71,6 +83,8 @@ public class Broker implements Serializable, Comparable<Broker> {
     private Permission permission;
     // 重试类型
     private RetryType retryType;
+    // 同步方式
+    private SyncMode syncMode;
     // 防止被JSON输出
     private transient boolean readable;
     // 防止被JSON输出
@@ -261,6 +275,14 @@ public class Broker implements Serializable, Comparable<Broker> {
         this.type = type;
     }
 
+    public SyncMode getSyncMode() {
+        return syncMode;
+    }
+
+    public void setSyncMode(SyncMode syncMode) {
+        this.syncMode = syncMode;
+    }
+
     public Location getLocation() {
         if (location == null) {
             String group = getGroup();
@@ -416,6 +438,9 @@ public class Broker implements Serializable, Comparable<Broker> {
         builder.append("{\"ip\":\"").append(ip).append("\",\"port\":").append(port).append(",\"alias\":\"")
                 .append(getAlias()).append("\",\"dataCenter\":").append(dataCenter).append(",\"permission\":\"")
                 .append(getPermission()).append("\"");
+        if (syncMode != null) {
+            builder.append(",\"syncMode\":\"").append(syncMode).append("\"");
+        }
         if (retryType != null) {
             builder.append(",\"retryType\":\"").append(retryType).append("\"");
         }

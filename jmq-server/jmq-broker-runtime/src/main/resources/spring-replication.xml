@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	">
+
+    <bean id="replicationConfig" class="com.ipd.jmq.replication.ReplicationConfig">
+        <property name="restartDelay" value="${ha.restartDelay}"/>
+        <property name="blockSize" value="${ha.blockSize}"/>
+        <property name="replicaDeadTimeout" value="${ha.timeout}"/>
+        <property name="insyncCount" value="${ha.insyncCount}"/>
+        <property name="insyncSize" value="${ha.insyncSize}"/>
+    </bean>
+</beans>

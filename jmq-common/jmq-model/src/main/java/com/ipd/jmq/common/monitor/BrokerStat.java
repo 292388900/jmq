@@ -3,6 +3,7 @@ package com.ipd.jmq.common.monitor;
 import com.ipd.jmq.common.cluster.ClusterRole;
 import com.ipd.jmq.common.cluster.Permission;
 import com.ipd.jmq.common.cluster.RetryType;
+import com.ipd.jmq.common.cluster.SyncMode;
 
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -67,6 +68,8 @@ public class BrokerStat implements Serializable {
     private Permission permission;
     // 重试类型
     private RetryType retryType;
+    // 同步方式
+    private SyncMode syncMode;
 
 
     public int getPort() {
@@ -123,6 +126,14 @@ public class BrokerStat implements Serializable {
 
     public void setRetryType(RetryType retryType) {
         this.retryType = retryType;
+    }
+
+    public SyncMode getSyncMode() {
+        return syncMode;
+    }
+
+    public void setSyncMode(SyncMode syncMode) {
+        this.syncMode = syncMode;
     }
 
     // topic统计信息列表

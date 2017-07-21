@@ -1,7 +1,7 @@
 package com.ipd.jmq.server.broker.netty.protocol;
 
 import com.ipd.jmq.common.network.CommandHandlerFactory;
-import com.ipd.jmq.common.network.netty.Protocol;
+import com.ipd.jmq.common.network.v3.netty.Protocol;
 import com.ipd.jmq.toolkit.plugin.ServicePlugin;
 import io.netty.channel.ChannelHandler;
 

@@ -8,18 +8,18 @@ import com.ipd.jmq.common.cluster.Permission;
 import com.ipd.jmq.common.cluster.TopicConfig;
 import com.ipd.jmq.common.exception.JMQCode;
 import com.ipd.jmq.common.exception.JMQException;
-import com.ipd.jmq.common.network.command.telnet.Commands;
-import com.ipd.jmq.common.network.command.telnet.TelnetCode;
-import com.ipd.jmq.common.network.command.telnet.TelnetResult;
+import com.ipd.jmq.common.telnet.Commands;
+import com.ipd.jmq.common.telnet.TelnetCode;
+import com.ipd.jmq.common.telnet.TelnetResult;
 import com.ipd.jmq.server.broker.cluster.ClusterManager;
 import com.ipd.jmq.common.network.v3.netty.telnet.param.PermiQueryParam;
 import com.ipd.jmq.common.network.Transport;
 import com.ipd.jmq.common.network.TransportException;
-import com.ipd.jmq.common.network.command.Command;
-import com.ipd.jmq.common.network.protocol.telnet.TelnetHandler;
-import com.ipd.jmq.common.network.protocol.telnet.TelnetHeader;
-import com.ipd.jmq.common.network.protocol.telnet.TelnetRequest;
-import com.ipd.jmq.common.network.protocol.telnet.TelnetResponse;
+import com.ipd.jmq.common.network.v3.command.Command;
+import com.ipd.jmq.common.network.v3.protocol.telnet.TelnetHandler;
+import com.ipd.jmq.common.network.v3.protocol.telnet.TelnetHeader;
+import com.ipd.jmq.common.network.v3.protocol.telnet.TelnetRequest;
+import com.ipd.jmq.common.network.v3.protocol.telnet.TelnetResponse;
 import com.ipd.jmq.toolkit.lang.Preconditions;
 
 import java.util.Map;
@@ -31,9 +31,13 @@ import java.util.Set;
 public class PermiQueryHandler implements TelnetHandler<Transport> {
 
     private ClusterManager clusterManager;
-
+    public PermiQueryHandler(){}
     public PermiQueryHandler(ClusterManager clusterManager) {
         Preconditions.checkArgument(clusterManager != null, "clusterManager can not be null");
+        this.clusterManager = clusterManager;
+    }
+
+    public void setClusterManager(ClusterManager clusterManager) {
         this.clusterManager = clusterManager;
     }
 

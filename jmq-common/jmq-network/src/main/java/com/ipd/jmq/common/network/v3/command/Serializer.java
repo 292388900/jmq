@@ -34,7 +34,7 @@ public class Serializer {
      *
      * @param in 输入缓冲区
      * @return 字符串
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     public static String readString(final ByteBuf in) throws Exception {
         return readString(in, 1, false);
@@ -46,7 +46,7 @@ public class Serializer {
      * @param in         输入缓冲区
      * @param lengthSize 长度大小
      * @return 字符串
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     public static String readString(final ByteBuf in, final int lengthSize) throws Exception {
         return readString(in, lengthSize, false);
@@ -59,7 +59,7 @@ public class Serializer {
      * @param lengthSize 长度大小
      * @param compressed 压缩标示
      * @return 字符串
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     public static String readString(final ByteBuf in, final int lengthSize, final boolean compressed) throws Exception {
         int length = 0;
@@ -107,7 +107,7 @@ public class Serializer {
      *
      * @param in     输入缓冲区
      * @param length 长度
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     public static byte[] readBytes(final ByteBuf in, final int length) throws Exception {
         if (in == null || length <= 0) {
@@ -132,9 +132,9 @@ public class Serializer {
      * 读取存储的消息
      *
      * @param in 输入缓冲区
-     * @throws java.lang.Exception
+     * @throws Exception
      * @see Serializer#write(
-     *com.ipd.jmq.common.message.BrokerMessage, io.netty.buffer.ByteBuf)
+     *BrokerMessage, ByteBuf)
      */
     public static BrokerMessage readBrokerMessage(final ByteBuf in) throws Exception {
         if (in == null) {
@@ -332,9 +332,9 @@ public class Serializer {
      *
      * @param in 输入缓冲区
      * @return 存储消息
-     * @throws java.lang.Exception
+     * @throws Exception
      * @see Serializer#write(
-     *com.ipd.jmq.common.message.Message, io.netty.buffer.ByteBuf)
+     *Message, ByteBuf)
      */
     public static BrokerMessage readMessage(final ByteBuf in) throws Exception {
         if (in == null) {
@@ -391,9 +391,9 @@ public class Serializer {
      *
      * @param in 输入缓冲区
      * @return 存储消息数组
-     * @throws java.lang.Exception
+     * @throws Exception
      * @see Serializer#write(
-     *com.ipd.jmq.common.message.Message[], io.netty.buffer.ByteBuf)
+     *Message[], ByteBuf)
      */
     public static BrokerMessage[] readMessages(final ByteBuf in) throws Exception {
         if (in == null) {
@@ -418,10 +418,10 @@ public class Serializer {
      *
      * @param in 输入缓冲区
      * @return 消息位置数组
-     * @throws java.lang.Exception
+     * @throws Exception
      * @see com.ipd.jmq.common.network.v3.codec.encode# encodeBody(io.netty.buffer.ByteBuf)
-     * @see Serializer#write(com.ipd.jmq.common.message.MessageLocation[],
-     * io.netty.buffer.ByteBuf)
+     * @see Serializer#write(MessageLocation[],
+     * ByteBuf)
      */
     public static MessageLocation[] readMessageLocations(final ByteBuf in) throws Exception {
         if (in == null) {
@@ -545,8 +545,8 @@ public class Serializer {
      *
      * @param message 存储消息
      * @param out     输出缓冲区
-     * @throws java.lang.Exception
-     * @see Serializer#readBrokerMessage(io.netty.buffer.ByteBuf)
+     * @throws Exception
+     * @see Serializer#readBrokerMessage(ByteBuf)
      */
     public static void write(final BrokerMessage message, final ByteBuf out) throws Exception {
         int size;
@@ -673,7 +673,7 @@ public class Serializer {
      *
      * @param messages 存储消息
      * @param out      输出缓冲区
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     public static void write(final BrokerMessage[] messages, final ByteBuf out) throws Exception {
         if (out == null) {
@@ -693,8 +693,8 @@ public class Serializer {
      *
      * @param message 消息
      * @param out     输出缓冲区
-     * @throws java.lang.Exception
-     * @see Serializer#readMessage(io.netty.buffer.ByteBuf)
+     * @throws Exception
+     * @see Serializer#readMessage(ByteBuf)
      */
     public static void write(final Message message, final ByteBuf out) throws Exception {
         if (out == null || message == null) {
@@ -742,8 +742,8 @@ public class Serializer {
      *
      * @param messages 消息数组
      * @param out      输出缓冲区
-     * @throws java.lang.Exception
-     * @see Serializer#readMessages(io.netty.buffer.ByteBuf)
+     * @throws Exception
+     * @see Serializer#readMessages(ByteBuf)
      */
     public static void write(final Message[] messages, final ByteBuf out) throws Exception {
         if (out == null) {
@@ -767,9 +767,9 @@ public class Serializer {
      *
      * @param locations 消息位置数组
      * @param out       输出缓冲区
-     * @throws java.lang.Exception
+     * @throws Exception
      * @see AckMessage# encodeBody(io.netty.buffer.ByteBuf)
-     * @see Serializer#readMessageLocations(io.netty.buffer.ByteBuf)
+     * @see Serializer#readMessageLocations(ByteBuf)
      */
     public static void write(final MessageLocation[] locations, final ByteBuf out) throws Exception {
         if (out == null) {
@@ -803,7 +803,7 @@ public class Serializer {
      * @param value      整数
      * @param out        输出
      * @param lengthSize 长度字节数
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     public static void write(final int value, final ByteBuf out, final int lengthSize) throws Exception {
         if (out == null) {
@@ -827,7 +827,7 @@ public class Serializer {
      *
      * @param value 长整数
      * @param out   输出
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     public static void write(final long value, final ByteBuf out) throws Exception {
         if (out == null) {
@@ -841,7 +841,7 @@ public class Serializer {
      *
      * @param value 字符串
      * @param out   输出缓冲区
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     public static void write(final String value, final ByteBuf out) throws Exception {
         write(value, out, 1, false);
@@ -1042,7 +1042,7 @@ public class Serializer {
      * @param value      字符串
      * @param out        输出缓冲区
      * @param lengthSize 长度字节数
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     public static void write(final String value, final ByteBuf out, final int lengthSize) throws Exception {
         write(value, out, lengthSize, false);
@@ -1055,7 +1055,7 @@ public class Serializer {
      * @param out        输出缓冲区
      * @param lengthSize 长度字节数
      * @param compressed 是否进行压缩
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     public static void write(final String value, final ByteBuf out, final int lengthSize,
                              final boolean compressed) throws Exception {
@@ -1095,7 +1095,7 @@ public class Serializer {
      *
      * @param value 数据源
      * @param out   输出缓冲区
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     public static void write(final ByteBuffer value, final ByteBuf out) throws Exception {
         write(value, out, true);
@@ -1107,7 +1107,7 @@ public class Serializer {
      * @param value       数据源
      * @param out         输出缓冲区
      * @param writeLength 是否写长度
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     public static void write(final ByteBuffer value, final ByteBuf out, final boolean writeLength) throws Exception {
         int length = value == null ? 0 : value.remaining();
@@ -1128,7 +1128,7 @@ public class Serializer {
      *
      * @param in 输入缓冲区
      * @return 缓冲区
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     public static ByteBuffer readByteBuffer(final ByteBuf in) throws Exception {
         if (in == null) {
@@ -1149,7 +1149,7 @@ public class Serializer {
      * @param in     输入缓冲区
      * @param length 读取长度
      * @return 缓冲区
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     public static ByteBuffer readByteBuffer(final ByteBuf in, int length) throws Exception {
         if (in == null || length <= 0) {

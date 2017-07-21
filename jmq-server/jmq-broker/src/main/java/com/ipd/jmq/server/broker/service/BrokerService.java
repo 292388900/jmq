@@ -4,7 +4,7 @@ import com.ipd.jmq.server.broker.BrokerConfig;
 import com.ipd.jmq.server.broker.SessionManager;
 import com.ipd.jmq.server.broker.cluster.ClusterManager;
 import com.ipd.jmq.server.broker.dispatch.DispatchService;
-import  com.ipd.jmq.server.broker.election.RoleDecider;
+import com.ipd.jmq.server.broker.election.RoleDecider;
 import com.ipd.jmq.server.broker.handler.DefaultHandlerFactory;
 import com.ipd.jmq.server.store.Store;
 import com.ipd.jmq.toolkit.concurrent.Scheduler;

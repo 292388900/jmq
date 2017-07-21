@@ -1,8 +1,8 @@
 package com.ipd.jmq.common.network.v3.netty;
 
-import com.ipd.jmq.common.network.command.Command;
-import com.ipd.jmq.common.network.netty.codec.Codec;
-import com.ipd.jmq.common.network.netty.codec.Encoder;
+import com.ipd.jmq.common.network.v3.command.Command;
+import com.ipd.jmq.common.network.v3.codec.Codec;
+import com.ipd.jmq.common.network.v3.codec.Encoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;

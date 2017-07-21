@@ -40,7 +40,7 @@ public interface Bytes extends BytesInput, BytesOutput<Bytes> {
      * 返回字节顺序
      * <p>
      * For consistency with {@link java.nio.ByteBuffer}, all bytes implementations are initially in
-     * {@link java.nio.ByteOrder#BIG_ENDIAN} order.
+     * {@link ByteOrder#BIG_ENDIAN} order.
      *
      * @return The byte order.
      */
@@ -49,8 +49,8 @@ public interface Bytes extends BytesInput, BytesOutput<Bytes> {
     /**
      * Sets the byte order, returning a new swapped {@link Bytes} instance.
      * <p>
-     * By default, all bytes are read and written in {@link java.nio.ByteOrder#BIG_ENDIAN} order. This provides complete
-     * consistency with {@link java.nio.ByteBuffer}. To flip bytes to {@link java.nio.ByteOrder#LITTLE_ENDIAN} order,
+     * By default, all bytes are read and written in {@link ByteOrder#BIG_ENDIAN} order. This provides complete
+     * consistency with {@link java.nio.ByteBuffer}. To flip bytes to {@link ByteOrder#LITTLE_ENDIAN} order,
      * this
      * {@code Bytes} instance is decorated by a {@link SwappedBytes} instance which will reverse
      * read and written bytes using, e.g. {@link Integer#reverseBytes(int)}.

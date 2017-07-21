@@ -14,13 +14,14 @@
     <version>3.0.0</version>
 
     <properties>
-        <!-- use jdk1.6 to make compatible for old clients -->
+        <!-- use.ipd.1.6 to make compatible for old clients -->
         <jdk.version>1.6</jdk.version>
     </properties>
 
     <modules>
         <module>jmq-client-core</module>
         <module>jmq-client-spring</module>
+        <module>jmq-example</module>
     </modules>
 
 </project>

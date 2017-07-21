@@ -11,7 +11,7 @@ import com.ipd.jmq.common.network.FailoverPolicy;
 import com.ipd.jmq.common.network.Transport;
 import com.ipd.jmq.common.network.TransportException;
 import com.ipd.jmq.common.model.Acknowledge;
-import com.ipd.jmq.common.network.command.Command;
+import com.ipd.jmq.common.network.v3.command.Command;
 import com.ipd.jmq.toolkit.retry.RetryPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

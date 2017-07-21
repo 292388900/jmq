@@ -3,22 +3,23 @@ package com.ipd.jmq.server.broker.handler;
 import com.ipd.jmq.common.cluster.TopicConfig;
 import com.ipd.jmq.common.exception.JMQCode;
 import com.ipd.jmq.common.exception.JMQException;
-import com.ipd.jmq.common.message.BrokerMessage;
-import com.ipd.jmq.common.message.Message;
+import com.ipd.jmq.common.message.*;
 import com.ipd.jmq.common.model.JournalLog;
 import com.ipd.jmq.common.network.v3.command.*;
 import com.ipd.jmq.common.network.v3.session.*;
 import com.ipd.jmq.server.broker.*;
+import com.ipd.jmq.server.broker.archive.ArchiveManager;
 import com.ipd.jmq.server.broker.cluster.ClusterManager;
 import com.ipd.jmq.server.broker.dispatch.DispatchService;
 import com.ipd.jmq.server.broker.monitor.BrokerMonitor;
 import com.ipd.jmq.server.broker.utils.BrokerUtils;
 import com.ipd.jmq.server.store.PutResult;
 import com.ipd.jmq.server.store.Store;
+import com.ipd.jmq.server.store.StoreContext;
 import com.ipd.jmq.common.network.Transport;
 import com.ipd.jmq.common.network.TransportException;
 import com.ipd.jmq.common.model.Acknowledge;
-import com.ipd.jmq.common.network.command.Command;
+import com.ipd.jmq.common.network.v3.command.Command;
 import com.ipd.jmq.toolkit.lang.Pair;
 import com.ipd.jmq.toolkit.lang.Preconditions;
 import com.ipd.jmq.toolkit.time.MilliPeriod;
@@ -34,15 +35,15 @@ import java.util.concurrent.ExecutorService;
  * 发送消息
  */
 public class PutMessageHandler extends AbstractHandler implements JMQHandler {
-
     protected static final Logger logger = LoggerFactory.getLogger(PutMessageHandler.class);
     protected Store store;
     protected BrokerMonitor brokerMonitor;
     protected ClusterManager clusterManager;
-//    protected ArchiveManager archiveLogManager;
+    protected ArchiveManager archiveLogManager;
     protected DispatchService dispatchService;
     protected TxTransactionManager transactionManager;
-
+    protected  BrokerConfig config;
+    public  PutMessageHandler(){}
     public PutMessageHandler(ExecutorService executorService, SessionManager sessionManager,
                              ClusterManager clusterManager, DispatchService dispatchService, TxTransactionManager transactionManager,
                              BrokerConfig config, BrokerMonitor brokerMonitor) {
@@ -53,7 +54,6 @@ public class PutMessageHandler extends AbstractHandler implements JMQHandler {
         Preconditions.checkArgument(sessionManager != null, "sessionManager can not be null");
         Preconditions.checkArgument(dispatchService != null, "dispatchService can not be null");
         Preconditions.checkArgument(executorService != null, "executorService can not be null");
-//        Preconditions.checkArgument(archiveLogManager != null, "archiveLogManager can not be null");
         Preconditions.checkArgument(transactionManager != null, "transactionManager can not be null");
 
         this.store = config.getStore();
@@ -63,9 +63,41 @@ public class PutMessageHandler extends AbstractHandler implements JMQHandler {
         this.clusterManager = clusterManager;
         this.dispatchService = dispatchService;
         this.executorService = executorService;
-//        this.archiveLogManager = archiveLogManager;
         this.transactionManager = transactionManager;
     }
+
+    public void setArchiveLogManager(ArchiveManager archiveLogManager) {
+        this.archiveLogManager = archiveLogManager;
+    }
+
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
+    }
+    public void setSessionManager(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
+    }
+    public void setConfig(BrokerConfig config) {
+        this.config = config;
+        this.store = config.getStore();
+    }
+
+    public void setBrokerMonitor(BrokerMonitor brokerMonitor) {
+        this.brokerMonitor = brokerMonitor;
+    }
+
+    public void setClusterManager(ClusterManager clusterManager) {
+        this.broker = clusterManager.getBroker();
+        this.clusterManager = clusterManager;
+    }
+
+    public void setDispatchService(DispatchService dispatchService) {
+        this.dispatchService = dispatchService;
+    }
+
+    public void setTransactionManager(TxTransactionManager transactionManager) {
+        this.transactionManager = transactionManager;
+    }
+
 
     @Override
     public Command process(final Transport transport, final Command command) throws TransportException {
@@ -122,7 +154,7 @@ public class PutMessageHandler extends AbstractHandler implements JMQHandler {
             final Acknowledge acknowledge = command.getHeader().getAcknowledge();
             // 遍历消息
             TransactionId transactionId = putMessage.getTransactionId();
-            final List<BrokerMessage> brokerMessages = new ArrayList<BrokerMessage>();
+            List<BrokerMessage> brokerMessages = new ArrayList<BrokerMessage>();
             int count = 0;
             int size = 0;
             for (Message message : messages) {
@@ -146,6 +178,7 @@ public class PutMessageHandler extends AbstractHandler implements JMQHandler {
                     bmsg.setType(JournalLog.TYPE_TX_PRE_MESSAGE);
                 }
                 BrokerUtils.setBrokerMessage(bmsg, csAddress, connection, transport, broker, now);
+                dispatchService.dispatchQueue(bmsg);
                 brokerMessages.add(bmsg);
                 count++;
                 size += message.getSize();
@@ -172,45 +205,46 @@ public class PutMessageHandler extends AbstractHandler implements JMQHandler {
                 final MilliPeriod period = new MilliPeriod();
                 period.begin();
                 try {
-                    if (acknowledge != Acknowledge.ACK_FLUSH && !topicConfig.isArchive()) {
-                        store.putMessages(brokerMessages, null);
-                    } else {
-                        final String app_topic = app + ":" + topic;
-                        final int messageCount = count;
-                        final int messageSize = size;
-                        final boolean isArchive = topicConfig.isArchive();
-                        final String topicFinal = topic;
-                        final String appFinal = app;
-                        store.putMessages(brokerMessages, new Store.ProcessedCallback() {
+                    final int messageCount = count;
+                    final int messageSize = size;
+                    final boolean isArchive = topicConfig.isArchive();
+                    StoreContext storeContext = new StoreContext(topic, app, brokerMessages, null);
+                    if (acknowledge == Acknowledge.ACK_FLUSH || isArchive) {
+                        storeContext.setCallback(new Store.ProcessedCallback<BrokerMessage>() {
                             @Override
-                            public void onReplicated(PutResult result) {
+                            public void onProcessed(StoreContext<BrokerMessage> context) {
                                 // 重要消息在从机复制成功后返回响应
                                 try {
                                     int requestId = command.getHeader().getRequestId();
-                                    JMQCode retCode = result.getReplicationCode();
+                                    JMQCode retCode = context.getResult().getCode();
                                     Command response = CommandUtils.createBooleanAck(requestId, retCode.getCode(), retCode.getMessage());
                                     if (retCode == JMQCode.SUCCESS && isArchive) {
-                                        for (BrokerMessage brokerMessage : brokerMessages) {
+                                        for (BrokerMessage brokerMessage : context.getLogs()) {
                                             if (topicConfig.isArchive()) {
-                                              //  archiveLogManager.writeProduce(brokerMessage);
+                                                archiveLogManager.writeProduce(brokerMessage);
+//                                                period.end();
+//                                                brokerMonitor.onPutMessage(context.getTopic(), context.getApp(), messageCount, messageSize, (int) period.time());
                                             }
                                         }
-                                        period.end();
-                                        brokerMonitor.onPutMessage(topicFinal, appFinal, messageCount, messageSize, (int) period.time());
                                     }
                                     if (callback == null) {
-                                        if (acknowledge == Acknowledge.ACK_FLUSH)
+                                        if (acknowledge == Acknowledge.ACK_FLUSH) {
                                             transport.acknowledge(command, response, null);
+                                        }
                                     } else {
-                                        callback.execute(result);
+                                        callback.execute(context.getResult());
                                     }
                                 } catch (TransportException e) {
-                                    logger.warn("send ack for {} failed: ", app_topic, e);
+                                    logger.warn("send ack for {} failed: ", context.getTopic() + ":" + context.getApp(), e);
                                 }
                             }
                         });
-                        if (acknowledge == Acknowledge.ACK_FLUSH) return null;
+                    }else {
+                        store.putJournalLogs(storeContext);
+                        period.end();
+                        brokerMonitor.onPutMessage(topic, app, messageCount, messageSize, (int) period.time());
                     }
+                    if (acknowledge == Acknowledge.ACK_FLUSH) return null;
                 } catch (JMQException e) {
                     if (count > 0) {
                         period.end();
@@ -226,6 +260,8 @@ public class PutMessageHandler extends AbstractHandler implements JMQHandler {
             }
         } catch (JMQException e) {
             throw new TransportException(e.getMessage(), e.getCause(), e.getCode());
+        } catch (Exception e) {
+            throw new TransportException(e.getMessage(), e.getCause(), JMQCode.CN_UNKNOWN_ERROR.getCode());
         }
 
         return null;

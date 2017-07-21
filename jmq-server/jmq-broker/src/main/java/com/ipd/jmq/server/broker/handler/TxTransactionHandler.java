@@ -13,8 +13,6 @@ import com.ipd.jmq.server.broker.TxTransactionManager;
 import com.ipd.jmq.server.broker.cluster.ClusterManager;
 import com.ipd.jmq.common.network.Transport;
 import com.ipd.jmq.common.network.TransportException;
-import com.ipd.jmq.common.network.command.Command;
-import com.ipd.jmq.common.network.command.Direction;
 import com.ipd.jmq.toolkit.lang.Pair;
 import com.ipd.jmq.toolkit.lang.Preconditions;
 import com.ipd.jmq.toolkit.time.SystemClock;
@@ -29,7 +27,7 @@ import java.util.concurrent.ExecutorService;
 public class TxTransactionHandler extends AbstractHandler implements JMQHandler {
     private TxTransactionManager transactionManager;
     private ClusterManager clusterManager;
-
+    public TxTransactionHandler(){}
     public TxTransactionHandler(ExecutorService executorService, SessionManager sessionManager,
                                 ClusterManager clusterManager, TxTransactionManager transactionManager) {
 
@@ -43,6 +41,23 @@ public class TxTransactionHandler extends AbstractHandler implements JMQHandler 
         this.clusterManager = clusterManager;
         this.executorService = executorService;
         this.transactionManager = transactionManager;
+    }
+
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
+    }
+
+
+    public void setSessionManager(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
+    }
+    public void setTransactionManager(TxTransactionManager transactionManager) {
+        this.transactionManager = transactionManager;
+    }
+
+    public void setClusterManager(ClusterManager clusterManager) {
+        this.broker = clusterManager.getBroker();
+        this.clusterManager = clusterManager;
     }
 
     @Override

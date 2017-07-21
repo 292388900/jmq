@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>jmq-server</artifactId>
+        <groupId>com.ipd.jmq</groupId>
+        <version>3.0.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>jmq-broker-runtime</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.ipd.jmq</groupId>
+            <artifactId>jmq-model</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ipd.jmq</groupId>
+            <artifactId>jmq-broker</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ipd.jmq</groupId>
+            <artifactId>jmq-broker-kafka</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <excludes>
+                        <exclude>*.xml</exclude>
+                        <exclude>*.properties</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2.1</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven</groupId>
+                        <artifactId>maven-core</artifactId>
+                        <version>2.2.1</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>org.apache.maven.wagon</groupId>
+                                <artifactId>wagon-file</artifactId>
+                            </exclusion>
+                            <exclusion>
+                                <groupId>org.apache.maven.wagon</groupId>
+                                <artifactId>wagon-provider-api</artifactId>
+                            </exclusion>
+                            <exclusion>
+                                <groupId>org.apache.maven.wagon</groupId>
+                                <artifactId>wagon-http-lightweight</artifactId>
+                            </exclusion>
+                            <exclusion>
+                                <groupId>org.apache.maven.wagon</groupId>
+                                <artifactId>wagon-http-shared</artifactId>
+                            </exclusion>
+                            <exclusion>
+                                <groupId>org.apache.maven.wagon</groupId>
+                                <artifactId>wagon-provider-api</artifactId>
+                            </exclusion>
+                            <exclusion>
+                                <groupId>org.apache.maven.wagon</groupId>
+                                <artifactId>wagon-http</artifactId>
+                            </exclusion>
+                            <exclusion>
+                                <groupId>org.apache.maven.wagon</groupId>
+                                <artifactId>wagon-webdav-jackrabbit</artifactId>
+                            </exclusion>
+                            <exclusion>
+                                <groupId>org.apache.maven.wagon</groupId>
+                                <artifactId>wagon-ssh-external</artifactId>
+                            </exclusion>
+                            <exclusion>
+                                <groupId>org.apache.maven.wagon</groupId>
+                                <artifactId>wagon-ssh</artifactId>
+                            </exclusion>
+                            <exclusion>
+                                <groupId>org.apache.maven.reporting</groupId>
+                                <artifactId>maven-reporting-api</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <!-- not append assembly id in release file name -->
+                    <finalName>jmq-server</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <descriptors>
+                        <descriptor>src/main/assemble/package.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>development</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <registry_url>zookeeper://192.168.1.5:2181</registry_url>
+                <!--<registry_url>zookeeper://192.168.157.147:2181</registry_url>-->
+                <registry_compressed>true</registry_compressed>
+                <netty_server_port>50088</netty_server_port>
+
+                <opts_memory><![CDATA[-Xms512M -Xmx512M  -server -XX:MaxPermSize=256M -Xss256K]]></opts_memory>
+
+                <broker_adminUser>jmq</broker_adminUser>
+                <broker_adminPassword>jmq</broker_adminPassword>
+                <store_bufferPoolSize>20</store_bufferPoolSize>
+
+                <!--数据存储文件-->
+                <store_path>${user.home}/export/Data/jmq.server_open</store_path>
+
+                <log_root><![CDATA[info,stdout,file]]></log_root>
+                <log_dir>${user.home}/export/Logs/jmq.server_open/&#36;{broker.name}</log_dir>
+                <log_ipd_level>info</log_ipd_level>
+                <log_file_level>info</log_file_level>
+                <ump_log_path>${user.home}/export/Logs/UMP-Monitor</ump_log_path>
+
+                <hbase_zookeeper_quorum><![CDATA[panda3:2181,panda4:2181,panda5:2181]]></hbase_zookeeper_quorum>
+                <zookeeper_znode_parent>/hbase_panda</zookeeper_znode_parent>
+                <hbase_poolSize>5</hbase_poolSize>
+
+                <des_key>www.ipd.com</des_key>
+                <jmq_token_prefix>jmq_</jmq_token_prefix>
+                <retry_fix_ddress></retry_fix_ddress>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>release-all</id>
+            <properties>
+                <registry_url>zookeeper://192.168.1.5:2181</registry_url>
+                <registry_compressed>true</registry_compressed>
+                <netty_server_port>50088</netty_server_port>
+                <opts_memory><![CDATA[-Xms512M -Xmx512M  -server -XX:MaxPermSize=256M -Xss256K]]></opts_memory>
+
+                <broker_adminUser>jmq</broker_adminUser>
+                <broker_adminPassword>jmq</broker_adminPassword>
+                <store_bufferPoolSize>20</store_bufferPoolSize>
+
+                <!--数据存储文件-->
+                <store_path>${user.home}/export/Data/jmq.server_open</store_path>
+
+                <log_root><![CDATA[info,stdout,file]]></log_root>
+                <log_dir>${user.home}/export/Logs/jmq.server_open/&#36;{broker.name}</log_dir>
+                <log_ipd_level>info</log_ipd_level>
+                <log_file_level>info</log_file_level>
+                <ump_log_path>${user.home}/export/Logs/UMP-Monitor</ump_log_path>
+
+                <hbase_zookeeper_quorum><![CDATA[panda3:2181,panda4:2181,panda5:2181]]></hbase_zookeeper_quorum>
+                <zookeeper_znode_parent>/hbase_panda</zookeeper_znode_parent>
+                <hbase_poolSize>5</hbase_poolSize>
+
+                <des_key>www.ipd.com</des_key>
+                <jmq_token_prefix>jmq_</jmq_token_prefix>
+                <retry_fix_ddress></retry_fix_ddress>
+            </properties>
+        </profile>
+    </profiles>
+</project>

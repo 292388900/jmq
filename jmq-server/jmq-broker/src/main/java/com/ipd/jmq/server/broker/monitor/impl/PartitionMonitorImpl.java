@@ -12,7 +12,7 @@ import com.ipd.jmq.server.broker.dispatch.DispatchService;
 import com.ipd.jmq.server.broker.monitor.api.PartitionMonitor;
 import com.ipd.jmq.server.broker.offset.TopicOffset;
 import com.ipd.jmq.server.broker.profile.PubSubStat;
-//import com.ipd.jmq.server.broker.retry.RetryManager;
+import com.ipd.jmq.server.broker.retry.RetryManager;
 import com.ipd.jmq.server.store.Store;
 import com.ipd.jmq.server.store.StoreConfig;
 import com.ipd.jmq.server.store.journal.FileStat;
@@ -39,7 +39,7 @@ public class PartitionMonitorImpl implements PartitionMonitor {
     // 派发服务
     protected DispatchService dispatchService;
     // 重试服务
-//    protected RetryManager retryManager;
+    protected RetryManager retryManager;
     // 当前Broker
     protected Broker broker;
     // 存储
@@ -67,7 +67,7 @@ public class PartitionMonitorImpl implements PartitionMonitor {
         this.storeConfig = brokerConfig.getStoreConfig();
         this.clusterManager = builder.clusterManager;
         this.dispatchService = builder.dispatchService;
-//        this.retryManager = builder.retryManager;
+        this.retryManager = builder.retryManager;
         this.replicationMaster = builder.replicationMaster;
         this.pubSubStat = builder.pubSubStat;
         this.broker = builder.broker;
@@ -105,6 +105,7 @@ public class PartitionMonitorImpl implements PartitionMonitor {
         brokerStat.setRole(clusterManager.getBroker().getRole());
         brokerStat.setPermission(clusterManager.getBroker().getPermission());
         brokerStat.setRetryType(clusterManager.getBroker().getRetryType());
+        brokerStat.setSyncMode(clusterManager.getBroker().getSyncMode());
 
         // 积压数量
         long totalPending = 0;
@@ -239,6 +240,7 @@ public class PartitionMonitorImpl implements PartitionMonitor {
         myBrokerStat.setRole(brokerStat.getRole());
         myBrokerStat.setPermission(brokerStat.getPermission());
         myBrokerStat.setRetryType(brokerStat.getRetryType());
+        myBrokerStat.setSyncMode(brokerStat.getSyncMode());
 
         return myBrokerStat;
     }
@@ -269,7 +271,7 @@ public class PartitionMonitorImpl implements PartitionMonitor {
     // 重试数据
     private int getRetry(String topic, String app) {
         try {
-            return -1;///retryManager.getRetry(topic, app);
+            return retryManager.getRetry(topic, app);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return 0;
@@ -358,6 +360,11 @@ public class PartitionMonitorImpl implements PartitionMonitor {
         return jsonObject.toJSONString();
     }
 
+    @Override
+    public void setBrokerStat(BrokerStat brokerStat) {
+        this.brokerStat = brokerStat;
+    }
+
     public static class Builder {
         // 存储
         protected Store store;
@@ -368,7 +375,7 @@ public class PartitionMonitorImpl implements PartitionMonitor {
         // 派发服务
         protected DispatchService dispatchService;
         // 重试服务
-//        protected RetryManager retryManager;
+        protected RetryManager retryManager;
         // 复制主分片
         protected ReplicationMaster replicationMaster;
         // 统计基础汇总信息
@@ -399,10 +406,10 @@ public class PartitionMonitorImpl implements PartitionMonitor {
             return this;
         }
 
-//        public Builder retryManager(RetryManager retryManager) {
-//            this.retryManager = retryManager;
-//            return this;
-//        }
+        public Builder retryManager(RetryManager retryManager) {
+            this.retryManager = retryManager;
+            return this;
+        }
 
         public Builder replicationMaster(ReplicationMaster replicationMaster) {
             this.replicationMaster = replicationMaster;

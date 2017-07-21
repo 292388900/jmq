@@ -1,0 +1,1 @@
+[{"archive":false,"consumers":{"app4Consumer":{}},"groups":["jmq100","jmq102"],"importance":1,"producers":{"app4Product":{}},"queues":5,"topic":"topic_simple","type":"TOPIC"}]

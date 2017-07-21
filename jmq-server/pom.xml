@@ -17,5 +17,7 @@
         <module>jmq-store</module>
         <module>jmq-replication</module>
         <module>jmq-context</module>
+        <module>jmq-broker-kafka</module>
+        <module>jmq-broker-runtime</module>
     </modules>
 </project>

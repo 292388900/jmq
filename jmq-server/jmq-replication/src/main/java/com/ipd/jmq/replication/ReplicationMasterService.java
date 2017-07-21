@@ -5,11 +5,11 @@ import com.ipd.jmq.common.exception.JMQCode;
 import com.ipd.jmq.common.network.*;
 import com.ipd.jmq.common.network.v3.codec.JMQCodec;
 import com.ipd.jmq.common.network.v3.command.*;
+import com.ipd.jmq.common.network.v3.netty.AbstractServer;
 import com.ipd.jmq.common.network.v3.netty.NettyDecoder;
 import com.ipd.jmq.common.network.v3.netty.NettyEncoder;
 import com.ipd.jmq.server.store.Store;
-import com.ipd.jmq.common.network.command.Command;
-import com.ipd.jmq.common.network.netty.AbstractServer;
+
 import com.ipd.jmq.toolkit.buffer.RByteBuffer;
 import com.ipd.jmq.toolkit.concurrent.EventBus;
 import com.ipd.jmq.toolkit.concurrent.EventListener;
@@ -35,6 +35,7 @@ import static com.ipd.jmq.common.network.v3.command.CommandUtils.createResponse;
  * Created by guoliang5 on 2016/8/16.
  */
 public class ReplicationMasterService extends Service implements ReplicationMaster {
+    public ReplicationMasterService(){}
     public ReplicationMasterService(Broker master, ReplicationConfig  config,
                                     ReplicationListener replicationListener, Store store) {
         if (master == null) {
@@ -360,4 +361,28 @@ public class ReplicationMasterService extends Service implements ReplicationMast
     private ReplicationConfig config;
     private Store store;
     private ReplicationMasterServer nettyServer;
+
+    public ReplicationConfig getConfig() {
+        return config;
+    }
+
+    public void setConfig(ReplicationConfig config) {
+        this.config = config;
+    }
+
+    public Store getStore() {
+        return store;
+    }
+
+    public void setStore(Store store) {
+        this.store = store;
+    }
+
+    public void setMaster(Broker master) {
+        this.master = master;
+    }
+
+    public void setReplicationListener(ReplicationListener replicationListener) {
+        this.replicationListener = replicationListener;
+    }
 }

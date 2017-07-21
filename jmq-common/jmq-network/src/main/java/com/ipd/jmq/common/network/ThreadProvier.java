@@ -1,7 +1,7 @@
 package com.ipd.jmq.common.network;
 
 
-import com.ipd.jmq.common.network.command.Command;
+import com.ipd.jmq.common.network.v3.command.Command;
 
 import java.util.concurrent.ExecutorService;
 

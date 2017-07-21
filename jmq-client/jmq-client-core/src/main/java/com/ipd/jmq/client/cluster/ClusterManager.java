@@ -18,7 +18,7 @@ import com.ipd.jmq.common.network.v3.netty.NettyClient;
 import com.ipd.jmq.common.network.v3.session.ClientId;
 import com.ipd.jmq.common.network.Transport;
 import com.ipd.jmq.common.model.Acknowledge;
-import com.ipd.jmq.common.network.command.Command;
+import com.ipd.jmq.common.network.v3.command.Command;
 import com.ipd.jmq.toolkit.concurrent.EventBus;
 import com.ipd.jmq.toolkit.concurrent.EventListener;
 import com.ipd.jmq.toolkit.lang.Close;

@@ -1,7 +1,7 @@
 package com.ipd.jmq.server.context;
 
 import com.alibaba.fastjson.JSON;
-import com.ipd.jmq.common.model.ConfigInfo;
+import com.ipd.jmq.common.model.Config;
 import com.ipd.jmq.registry.PathData;
 import com.ipd.jmq.registry.Registry;
 import com.ipd.jmq.registry.RegistryException;
@@ -15,6 +15,7 @@ import com.ipd.jmq.toolkit.io.Zip;
 import com.ipd.jmq.toolkit.lang.Charsets;
 import com.ipd.jmq.toolkit.security.Base64;
 import com.ipd.jmq.toolkit.security.Des;
+import com.ipd.jmq.toolkit.security.Encrypt;
 import com.ipd.jmq.toolkit.service.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -308,9 +309,9 @@ public class ContextManager extends Service {
         if (logger.isInfoEnabled()) {
             logger.info("update config.\n" + text);
         }
-        List<ConfigInfo> infoList;
+        List<Config> infoList;
         try {
-            infoList = JSON.parseArray(text, ConfigInfo.class);
+            infoList = JSON.parseArray(text, Config.class);
         } catch (Exception e) {
             logger.error(String.format("parse config data error."), e);
             return;
@@ -319,14 +320,14 @@ public class ContextManager extends Service {
             String value;
             String key;
             String old;
-            for (ConfigInfo info : infoList) {
-                key = info.getKey();
+            for (Config info : infoList) {
+                key = info.getCode();
                 value = info.getValue();
                 if (info.isPassword()) {
                     try {
                         // 解密密码
                         data = Base64.decode(value);
-                        data = Des.INSTANCE.decrypt(data, config.getKey().getBytes());
+                        data = Des.INSTANCE.decrypt(data, Encrypt.DEFAULT_KEY.getBytes());
                         value = new String(data, Charsets.UTF_8);
                     } catch (Exception e) {
                         logger.error(String.format("decrypt config %s error. ", key), e);
@@ -334,7 +335,7 @@ public class ContextManager extends Service {
                         continue;
                     }
                 }
-                if (value != null) {
+                if (value != null && key!=null) {
                     old = configs.getString(key, "");
                     if (!value.equals(old)) {
                         configs.put(key, value);

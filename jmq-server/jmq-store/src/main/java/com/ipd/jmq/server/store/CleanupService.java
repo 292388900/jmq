@@ -183,7 +183,7 @@ public class CleanupService extends Service {
         try {
             long journalOffset = getMinAckJournalOffset();
             if (logger.isTraceEnabled()) {
-                logger.trace(String.format("minAckJournal:" + journalOffset));
+                logger.trace(String.format("minAckJournal:%d", journalOffset));
             }
             try {
                 if (journalOffset > 0) {

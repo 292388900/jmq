@@ -3,6 +3,7 @@ package com.ipd.jmq.common.model;
 import com.ipd.jmq.common.cluster.ClusterRole;
 import com.ipd.jmq.common.cluster.Permission;
 import com.ipd.jmq.common.cluster.RetryType;
+import com.ipd.jmq.common.cluster.SyncMode;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -24,11 +25,11 @@ public class Broker extends BaseModel implements Serializable {
     /**
      * 数据中心Id
      */
-    private long dataCenterId;
+    private Identity dataCenter;
     /**
-     * Broker实例的名称
+     * 主机id
      */
-    private String name;
+    private Identity host;
     /**
      * Broker实例的ip
      */
@@ -45,7 +46,7 @@ public class Broker extends BaseModel implements Serializable {
     /**
      * 分组
      */
-    private String group;
+    private Identity shard;
     /**
      * 集群初始化角色
      */
@@ -53,35 +54,24 @@ public class Broker extends BaseModel implements Serializable {
     /**
      * 别名
      */
+    @Deprecated
     private String alias;
     /**
      * 权限
      */
     private Permission permission;
     /**
+     * 复制方式
+     */
+    private SyncMode syncMode;
+    /**
      * 重试类型
      */
     private RetryType retryType;
     /**
-     * 重试类型
-     */
-    private String flushDiskMode;
-    /**
      * Broker实例的描述
      */
     private String description;
-
-    private String labels;
-
-    public String getLabels() {
-        return labels;
-    }
-
-    public void setLabels(String labels) {
-        this.labels = labels;
-    }
-
-    private String version;
 
     public Broker() {
         super();
@@ -117,27 +107,8 @@ public class Broker extends BaseModel implements Serializable {
         this.alias = alias;
     }
 
-    public long getDataCenterId() {
-        return dataCenterId;
-    }
-
-    public void setDataCenterId(long dataCenterId) {
-        this.dataCenterId = dataCenterId;
-    }
-
-    public String getName() {
-        if (name == null && ip != null) {
-            name = ip.replace('.', '_') + "_" + port;
-        }
-        return name;
-    }
-
     public int getManagementPort() {
         return port % 10000 + 10000;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getIp() {
@@ -154,14 +125,6 @@ public class Broker extends BaseModel implements Serializable {
 
     public void setPort(int port) {
         this.port = port;
-    }
-
-    public String getGroup() {
-        return group;
-    }
-
-    public void setGroup(String group) {
-        this.group = group;
     }
 
     public ClusterRole getRole() {
@@ -188,6 +151,14 @@ public class Broker extends BaseModel implements Serializable {
         this.permission = permission;
     }
 
+    public SyncMode getSyncMode() {
+        return syncMode;
+    }
+
+    public void setSyncMode(SyncMode syncMode) {
+        this.syncMode = syncMode;
+    }
+
     public RetryType getRetryType() {
         return retryType;
     }
@@ -204,24 +175,52 @@ public class Broker extends BaseModel implements Serializable {
         this.description = description;
     }
 
-    public String getFlushDiskMode() {
-        return flushDiskMode;
+    public Identity getDataCenter() {
+        return dataCenter;
     }
 
-    public void setFlushDiskMode(String flushDiskMode) {
-        this.flushDiskMode = flushDiskMode;
+    public void setDataCenter(Identity dataCenter) {
+        this.dataCenter = dataCenter;
     }
 
-    @Override
-    public String toString() {
-        return this.getName();
+    public Identity getHost() {
+        return host;
     }
 
-    public String getVersion() {
-        return version;
+    public void setHost(Identity host) {
+        this.host = host;
     }
 
-    public void setVersion(String version) {
-        this.version = version;
+    public Identity getShard() {
+        return shard;
+    }
+
+    public void setShard(Identity shard) {
+        this.shard = shard;
+    }
+
+    public static class Builder extends BaseModel.Builder<Broker, Builder> {
+        public Builder() {
+            this(new Broker());
+        }
+
+        public Builder(Broker broker) {
+            super(broker);
+        }
+
+        public static Builder build() {
+            return new Builder();
+        }
+
+        public static Builder build(Broker broker) {
+            return new Builder(broker);
+        }
+    }
+
+    public static void main(String[] args) {
+        long i = Long.MAX_VALUE;
+        System.out.println(Long.MAX_VALUE);
+        System.out.println("i>>>32:"+(i>>>32));
+        System.out.println("i^(i>>>32):"+(int)(i^(i>>>32)));
     }
 }

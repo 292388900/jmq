@@ -1,10 +1,9 @@
 package com.ipd.jmq.common.network.v3.command;
 
-import com.ipd.jmq.common.network.command.Releasable;
 import com.ipd.jmq.common.network.v3.codec.JMQCodec;
 import com.ipd.jmq.common.network.v3.codec.encode.JMQEncoder;
 import com.ipd.jmq.common.network.v3.netty.BufAllocator;
-import com.ipd.jmq.common.network.netty.buffer.WrappedByteBuf;
+import com.ipd.jmq.common.network.v3.netty.buffer.WrappedByteBuf;
 import com.ipd.jmq.toolkit.buffer.RByteBuffer;
 import com.ipd.jmq.toolkit.lang.Preconditions;
 import io.netty.buffer.ByteBuf;

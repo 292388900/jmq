@@ -4,7 +4,7 @@ import com.ipd.jmq.common.network.v3.command.JMQHeader;
 import com.ipd.jmq.common.network.v3.command.JMQPayload;
 import com.ipd.jmq.common.network.v3.command.Serializer;
 import com.ipd.jmq.common.network.TransportException;
-import com.ipd.jmq.common.network.command.Direction;
+import com.ipd.jmq.common.network.v3.command.Direction;
 import io.netty.buffer.ByteBuf;
 
 import java.util.concurrent.ConcurrentHashMap;

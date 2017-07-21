@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <bean id="authentication" class="com.ipd.jmq.toolkit.security.auth.DefaultAuthentication">
+        <constructor-arg index="0" value="${broker.adminUser}"/>
+        <constructor-arg index="1" value="${broker.adminPassword}"/>
+        <constructor-arg index="2" value="${broker.tokenPrefix}"/>
+    </bean>
+    <bean id="zkRegistry" class="com.ipd.jmq.registry.RegistryFactory" >
+        <constructor-arg value="${registry.url}"/>
+        <property name="waitTime" value="2000"/>
+    </bean>
+    <bean id="contextConfig" class="com.ipd.jmq.server.context.ContextConfig">
+        <property name="configPath" value="${registry.configPath}"/>
+        <property name="compressed" value="${registry.compressed}"/>
+        <property name="registryFactory" ref="zkRegistry"/>
+    </bean>
+    <bean id="brokerConfig" class="com.ipd.jmq.server.broker.BrokerConfig" lazy-init="true">
+        <property name="serverConfig" ref="nettyServerConfig"/>
+        <property name="authentication" ref="authentication"/>
+        <property name="storeConfig" ref="storeConfig"/>
+        <property name="retryConfig" ref="retryConfig"/>
+        <property name="offsetConfig" ref="offsetConfig"/>
+        <property name="replicationConfig" ref="replicationConfig"/>
+        <property name="registryUrl" value="${registry.url}"/>
+        <property name="registryFactory" ref="zkRegistry"/>
+        <property name="roleDecider" value="${broker.roleDecider}"/>
+        <property name="protocols" value="${broker.protocols}"/>
+        <property name="group" value="${broker.group}"/>
+        <property name="getThreads" value="${broker.getThreads}"/>
+        <property name="getQueueCapacity" value="${broker.getQueueCapacity}"/>
+        <property name="putThreads" value="${broker.putThreads}"/>
+        <property name="putQueueCapacity" value="${broker.putQueueCapacity}"/>
+        <property name="adminThreads" value="${broker.adminThreads}"/>
+        <property name="useLocalConfig" value="${registry.useLocalConfig}"/>
+        <property name="brokerPath" value="${registry.brokerPath}"/>
+        <property name="topicPath" value="${registry.topicPath}"/>
+        <property name="livePath" value="${registry.livePath}"/>
+        <property name="configPath" value="${registry.configPath}"/>
+        <property name="controllerPath" value="${registry.controllerPath}"/>
+        <property name="dataCenterPath" value="${registry.dataCenterPath}"/>
+        <property name="compressed" value="${registry.compressed}"/>
+        <property name="ackTimeout" value="${broker.ackTimeout}"/>
+        <property name="batchSize" value="${broker.batchSize}"/>
+        <property name="checkAckExpireInterval" value="${broker.checkAckExpireInterval}"/>
+        <property name="checkTransactionExpireInterval" value="${broker.checkTransactionExpireInterval}"/>
+        <property name="perfStatInterval" value="${broker.perfStatInterval}"/>
+        <property name="nettyClient" ref="nettyClient"/>
+        <property name="encryptKey" value="${des.key}"/>
+        <property name="clientStatConfig" ref="clientStatConfig"/>
+        <property name="webRegistryInterval" value="${registry.webInterval}"/>
+        <property name="consumerContinueErrs" value="${broker.consumerContinueErrs}"/>
+        <property name="prefetchSize" value="2000"/>
+        <property name="delayThreads" value="${broker.delayThreads}"/>
+        <property name="pusherPollTimeout" value="100"/>
+        <property name="checkBlockExpireInterval" value="1000"/>
+        <property name="tokenPrefix" value="${jmq_token_prefix}"/>
+        <property name="dynamicZkRegistryInterval" value="${registry.dynamicZkInterval}"/>
+        <property name="registryInfoFromWeb" value="${registry.getFromWeb}"/>
+        <property name="webRegistryURL" value="${registry.webRegistryURL}"/>
+        <!--kafka配置-->
+        <property name="statTimeWindowSize" value="${kafka.statTimeWindowSize}"/>
+        <property name="limitTimes" value="${kafka.limitTimes}"/>
+        <property name="defaultMaxMetadataSize" value="${kafka.defaultMaxMetadataSize}"/>
+        <property name="updataKafkaCachePeriod" value="${kafka.updataKafkaCachePeriod}"/>
+        <property name="offsetCacheRetainTime" value="${kafka.offsetCacheRetainTime}" />
+        <property name="store" ref="jMQStore"/>
+    </bean>
+    <bean id="jMQStore" class="com.ipd.jmq.server.store.JMQStore"/>
+          <!--<property name="config" ref="storeConfig"/>-->
+          <!--<property name="serverConfig" ref="nettyServerConfig"/>-->
+    <!--</bean>-->
+    <!--<bean id="storeService" class="com.ipd.jmq.server.store.StoreService">-->
+          <!--<property name="clusterManager" ref="clusterManager"/>-->
+          <!--<property name="storeConfig" ref="storeConfig"/>-->
+          <!--<property name="store" ref="jMQStore"/>-->
+        <!--<property name="dispatchService" ref="dispatchManager"/>-->
+    <!--</bean>-->
+    <bean id="clusterManager" class="com.ipd.jmq.server.broker.cluster.ClusterManager">
+        <constructor-arg index="0" ref="brokerConfig"/>
+        <property name="sequentialManager" ref="sequentialManager"/>
+        <property name="brokerMonitor" ref="brokerMonitor"/>
+    </bean>
+    <bean id="contextManager" class="com.ipd.jmq.server.context.ContextManager">
+        <constructor-arg index="0" ref="contextConfig"/>
+    </bean>
+    <bean id="sessionManager" class="com.ipd.jmq.server.broker.SessionManager">
+        <property name="sequentialManager" ref="sequentialManager"/>
+    </bean>
+    <bean id="sequentialManager" class="com.ipd.jmq.server.broker.cluster.SequentialManager">
+        <constructor-arg index="0" ref="brokerConfig"/>
+        <property name="clusterManager" ref="clusterManager"/>
+        <property name="sessionManager" ref="sessionManager"/>
+        <property name="dispatchService" ref="dispatchManager"/>
+        <property name="brokerMonitor" ref="brokerMonitor"/>
+    </bean>
+    <bean id="offsetManager" class="com.ipd.jmq.server.broker.offset.OffsetManager">
+        <constructor-arg index="0" ref="offsetConfig"/>
+        <property name="clusterManager" ref="clusterManager"/>
+    </bean>
+    <bean id="scheduler" class="com.ipd.jmq.toolkit.concurrent.Scheduler">
+        <constructor-arg index="0" value="${broker.delayThreads}"/>
+    </bean>
+    <bean id="transactionManager" class=" com.ipd.jmq.server.broker.TxTransactionManager">
+             <constructor-arg index="0" ref="brokerConfig"/>
+            <property name="brokerMonitor" ref="brokerMonitor"/>
+            <property name="clusterManager" ref="clusterManager"/>
+            <property name="sessionManager" ref="sessionManager"/>
+            <property name="archiveManager" ref="archiveManager"/>
+    </bean>
+    <bean id="archiveManager" class="com.ipd.jmq.server.broker.archive.ArchiveManagerImpl">
+        <constructor-arg index="0" ref="storeConfig"/>
+    </bean>
+    <bean id="longPullManager" class="com.ipd.jmq.server.broker.LongPullManager">
+            <property name="sessionManager" ref="sessionManager"/>
+            <property name="clusterManager" ref="clusterManager"/>
+            <property name="brokerMonitor" ref="brokerMonitor"/>
+            <property name="config" ref="brokerConfig"/>
+            <property name="dispatchService" ref="dispatchManager"/>
+    </bean>
+    <bean id="replicationMaster" class="com.ipd.jmq.replication.ReplicationMasterService"/>
+    <bean id="dispatchManager" class="com.ipd.jmq.server.broker.dispatch.DispatchManager">
+        <constructor-arg index="0" ref="sessionManager"/>
+        <constructor-arg index="1" ref="clusterManager"/>
+        <constructor-arg index="2" ref="retryManager"/>
+        <constructor-arg index="3" ref="brokerConfig"/>
+        <constructor-arg index="4" ref="offsetManager"/>
+        <property name="brokerMonitor" ref="brokerMonitor"/>
+    </bean>
+    <bean id="localOffsetManager" class="com.ipd.jmq.server.broker.LocalOffsetManager">
+        <property name="clusterManager" ref="clusterManager"/>
+        <property name="config" ref="brokerConfig"/>
+        <property name="dispatchService" ref="dispatchManager"/>
+    </bean>
+    <!--<bean id="retryPerfBuffer" class="com.ipd.jmq.common.monitor.RetryPerfBuffer"/>-->
+    <bean id="brokerMonitor" class="com.ipd.jmq.server.broker.monitor.BrokerMonitor">
+        <constructor-arg index="0" ref="sessionManager"/>
+        <constructor-arg index="1" ref="clusterManager"/>
+        <constructor-arg index="2" ref="dispatchManager"/>
+        <constructor-arg index="3" ref="retryManager"/>
+        <constructor-arg index="4" ref="brokerConfig"/>
+        <constructor-arg index="5" ref="replicationMaster"/>
+        <!--<property name="retryPerfBuffer" ref="retryPerfBuffer"/>-->
+     </bean>
+    <bean id="getMessageHandler" class="com.ipd.jmq.server.broker.handler.GetMessageHandler" >
+          <property name="dispatchService" ref="dispatchManager"/>
+          <property name="brokerMonitor" ref="brokerMonitor"/>
+          <property name="clusterManager" ref="clusterManager"/>
+         <property name="longPullManager" ref="longPullManager"/>
+          <property name="sessionManager" ref="sessionManager"/>
+    </bean>
+    <bean id="ackMessageHandler" class="com.ipd.jmq.server.broker.handler.AckMessageHandler">
+           <property name="clusterManager" ref="clusterManager"/>
+           <property name="archiveManager" ref="archiveManager"/>
+           <property name="brokerMonitor" ref="brokerMonitor"/>
+           <property name="dispatchService" ref="dispatchManager"/>
+           <property name="sessionManager" ref="sessionManager"/>
+           <property name="config" ref="brokerConfig"/>
+            <property name="retryManager" ref="retryManager"/>
+    </bean>
+    <bean id="sessionHandler" class="com.ipd.jmq.server.broker.handler.SessionHandler">
+           <property name="sessionManager" ref="sessionManager"/>
+           <property name="brokerMonitor" ref="brokerMonitor"/>
+           <property name="clusterManager" ref="clusterManager"/>
+           <property name="config" ref="brokerConfig"/>
+    </bean>
+    <bean id="putMessageHandler" class="com.ipd.jmq.server.broker.handler.PutMessageHandler">
+           <property name="clusterManager"  ref="clusterManager"/>
+           <property name="brokerMonitor" ref="brokerMonitor"/>
+           <property name="config" ref="brokerConfig"/>
+           <property name="archiveLogManager" ref="archiveManager"/>
+           <property name="sessionManager" ref="sessionManager"/>
+           <property name="transactionManager" ref="transactionManager"/>
+           <property name="dispatchService"  ref="dispatchManager"/>
+    </bean>
+    <bean id="txTransactionHandler" class="com.ipd.jmq.server.broker.handler.TxTransactionHandler">
+        <property name="transactionManager" ref="transactionManager"/>
+        <property name="sessionManager" ref="sessionManager"/>
+        <property name="clusterManager"  ref="clusterManager"/>
+    </bean>
+    <bean id="feedbackHandler" class="com.ipd.jmq.server.broker.handler.TxFeedbackHandler">
+        <property name="transactionManager" ref="transactionManager"/>
+        <property name="sessionManager" ref="sessionManager"/>
+    </bean>
+    <bean id="metadataHandler" class="com.ipd.jmq.server.broker.handler.MetadataHandler">
+        <property name="sessionManager" ref="sessionManager"/>
+        <property name="clusterManager"  ref="clusterManager"/>
+        <property name="config" ref="brokerConfig"/>
+    </bean>
+    <bean id="monitorHandler" class="com.ipd.jmq.server.broker.handler.telnet.MonitorHandler">
+        <property name="brokerMonitor" ref="brokerMonitor"/>
+    </bean>
+    <bean id="permiQueryHandler" class="com.ipd.jmq.server.broker.handler.telnet.PermiQueryHandler">
+        <property name="clusterManager"  ref="clusterManager"/>
+    </bean>
+    <bean id="brokerHandler" class="com.ipd.jmq.server.broker.handler.telnet.BrokerHandler">
+        <property name="config"  ref="brokerConfig"/>
+    </bean>
+    <bean id="topicHandler" class="com.ipd.jmq.server.broker.handler.telnet.TopicHandler">
+        <property name="config"  ref="brokerConfig"/>
+    </bean>
+    <bean id="retryMessageHandler" class="com.ipd.jmq.server.broker.handler.RetryMessageHandler">
+             <property name="retryManager" ref="retryManager"/>
+             <property name="brokerMonitor" ref="brokerMonitor"/>
+             <property name="cleanScheduler" ref="scheduler"/>
+             <property name="clusterManager" ref="clusterManager"/>
+             <property name="config" ref="brokerConfig"/>
+             <property name="dispatchService" ref="dispatchManager"/>
+             <property name="sessionManager" ref="sessionManager"/>
+    </bean>
+    <bean id="authHandler" class="com.ipd.jmq.common.network.v3.netty.telnet.base.AuthHandler"/>
+    <bean id="handlerFactory" class="com.ipd.jmq.server.broker.handler.DefaultHandlerFactory"/>
+    <bean id="helpHandler" class="com.ipd.jmq.common.network.v3.protocol.telnet.HelpHandler"/>
+    <bean id="exitHandler" class="com.ipd.jmq.common.network.v3.protocol.telnet.ExitHandler"/>
+    <bean id="telnetFactory" class="com.ipd.jmq.server.broker.handler.TelnetHandlerFactory"/>
+    <bean id="retryManager" class="com.ipd.jmq.server.broker.retry.RetryManagerDummy">
+        <constructor-arg index="0" ref="clusterManager"/>
+        <constructor-arg index="1" ref="contextManager"/>
+        <constructor-arg index="2" ref="scheduler"/>
+        <constructor-arg index="3" ref="brokerConfig"/>
+    </bean>
+    <bean id="brokerService" class="com.ipd.jmq.server.broker.JMQBrokerService" destroy-method="stop">
+        <property name="config" ref="brokerConfig"/>
+        <property name="clusterManager" ref="clusterManager"/>
+        <property name="sessionManager" ref="sessionManager"/>
+        <property name="sequentialManager" ref="sequentialManager"/>
+        <property name="scheduler" ref="scheduler"/>
+        <property name="offsetManager" ref="offsetManager"/>
+        <property name="dispatchService" ref="dispatchManager"/>
+        <property name="brokerMonitor" ref="brokerMonitor"/>
+        <property name="contextManager" ref="contextManager"/>
+        <property name="transactionManager" ref="transactionManager"/>
+        <property name="localOffsetManager" ref="localOffsetManager"/>
+        <property name="longPullManager" ref="longPullManager"/>
+        <property name="getMessageHandler" ref="getMessageHandler"/>
+        <property name="sessionHandler" ref="sessionHandler"/>
+        <property name="putMessageHandler" ref="putMessageHandler"/>
+        <property name="txTransactionHandler" ref="txTransactionHandler"/>
+        <property name="feedbackHandler" ref="feedbackHandler"/>
+        <property name="metadataHandler" ref="metadataHandler"/>
+        <property name="authHandler" ref="authHandler"/>
+        <property name="monitorHandler" ref="monitorHandler"/>
+        <property name="permiQueryHandler" ref="permiQueryHandler"/>
+        <property name="brokerHandler" ref="brokerHandler"/>
+        <property name="topicHandler" ref="topicHandler"/>
+        <property name="ackMessageHandler" ref="ackMessageHandler"/>
+        <property name="handlerFactory" ref="handlerFactory"/>
+        <property name="telnetFactory" ref="telnetFactory"/>
+        <property name="exitHandler" ref="exitHandler"/>
+        <property name="helpHandler" ref="helpHandler"/>
+        <property name="retryMessageHandler" ref="retryMessageHandler"/>
+        <property name="replicationMaster" ref="replicationMaster"/>
+        <property name="store" ref="jMQStore"/>
+        <property name="storeUnsafe"  ref="jMQStore"/>
+        <property name="archiveManager" ref="archiveManager"/>
+        <property name="retryManager" ref="retryManager"/>
+    </bean>
+</beans>

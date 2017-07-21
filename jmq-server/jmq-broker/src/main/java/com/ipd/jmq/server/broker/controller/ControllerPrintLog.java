@@ -37,33 +37,33 @@ public class ControllerPrintLog {
 
     protected static final String CONSUMER = "consumer";
 
-    protected static final Map<String, Map<ControllerType, Long>> printTopicLogTimestampMap;
+    protected static final Map<String, Map<AppPermissionType, Long>> printTopicLogTimestampMap;
 
-    protected static final Map<String, Map<ControllerType, Long>> printAppLogTimestampMap;
+    protected static final Map<String, Map<AppPermissionType, Long>> printAppLogTimestampMap;
 
     static {
         // 控制日志输出,key: topic+PRODUCER或topic+CONSUMER, value记录上次打印日志时间,非线程安全
-        printTopicLogTimestampMap = new HashMap<String, Map<ControllerType, Long>>();
+        printTopicLogTimestampMap = new HashMap<String, Map<AppPermissionType, Long>>();
         // 应用级别控制日志输出,key: app+PRODUCER或app+CONSUMER, value记录上次打印日志时间,非线程安全
-        printAppLogTimestampMap = new HashMap<String, Map<ControllerType, Long>>();
+        printAppLogTimestampMap = new HashMap<String, Map<AppPermissionType, Long>>();
     }
 
     /**
      * 确定是否需要打印日志,
      *
-     * @param controllerType
+     * @param appPermissionType
      * @return
      */
-    public static void printLog(String level, ControllerType controllerType, int type, int printType) {
+    public static void printLog(String level, AppPermissionType appPermissionType, int type, int printType) {
         Long lastPrintLogTimestamp = 0L;
         String printLogKey = null;
-        Map<ControllerType, Long> controllerTimestamp = null;
+        Map<AppPermissionType, Long> controllerTimestamp = null;
         if (APP_LEVEL_PRODUCE_PRINT_LOG == type) {
             printLogKey = level + PRODUCER;
             controllerTimestamp = printAppLogTimestampMap.get(printLogKey);
             if (controllerTimestamp == null || controllerTimestamp.isEmpty()) {
-                controllerTimestamp = new EnumMap<ControllerType, Long>(ControllerType.class);
-                controllerTimestamp.put(controllerType, SystemClock.getInstance().now());
+                controllerTimestamp = new EnumMap<AppPermissionType, Long>(AppPermissionType.class);
+                controllerTimestamp.put(appPermissionType, SystemClock.getInstance().now());
                 printAppLogTimestampMap.put(printLogKey, controllerTimestamp);
                 printLogByPrintType(level, printType);
                 return;
@@ -72,8 +72,8 @@ public class ControllerPrintLog {
             printLogKey = level + CONSUMER;
             controllerTimestamp = printAppLogTimestampMap.get(printLogKey);
             if (controllerTimestamp == null || controllerTimestamp.isEmpty()) {
-                controllerTimestamp = new EnumMap<ControllerType, Long>(ControllerType.class);
-                controllerTimestamp.put(controllerType, SystemClock.getInstance().now());
+                controllerTimestamp = new EnumMap<AppPermissionType, Long>(AppPermissionType.class);
+                controllerTimestamp.put(appPermissionType, SystemClock.getInstance().now());
                 printAppLogTimestampMap.put(printLogKey, controllerTimestamp);
                 printLogByPrintType(level, printType);
                 return;
@@ -82,8 +82,8 @@ public class ControllerPrintLog {
             printLogKey = level + PRODUCER;
             controllerTimestamp = printTopicLogTimestampMap.get(printLogKey);
             if (controllerTimestamp == null || controllerTimestamp.isEmpty()) {
-                controllerTimestamp = new EnumMap<ControllerType, Long>(ControllerType.class);
-                controllerTimestamp.put(controllerType, SystemClock.getInstance().now());
+                controllerTimestamp = new EnumMap<AppPermissionType, Long>(AppPermissionType.class);
+                controllerTimestamp.put(appPermissionType, SystemClock.getInstance().now());
                 printTopicLogTimestampMap.put(printLogKey, controllerTimestamp);
                 printLogByPrintType(level, printType);
                 return;
@@ -92,24 +92,24 @@ public class ControllerPrintLog {
             printLogKey = level + CONSUMER;
             controllerTimestamp = printTopicLogTimestampMap.get(printLogKey);
             if (controllerTimestamp == null || controllerTimestamp.isEmpty()) {
-                controllerTimestamp = new EnumMap<ControllerType, Long>(ControllerType.class);
-                controllerTimestamp.put(controllerType, SystemClock.getInstance().now());
+                controllerTimestamp = new EnumMap<AppPermissionType, Long>(AppPermissionType.class);
+                controllerTimestamp.put(appPermissionType, SystemClock.getInstance().now());
                 printTopicLogTimestampMap.put(printLogKey, controllerTimestamp);
                 printLogByPrintType(level, printType);
                 return;
             }
         }
 
-        lastPrintLogTimestamp = controllerTimestamp.get(controllerType);
+        lastPrintLogTimestamp = controllerTimestamp.get(appPermissionType);
         if (lastPrintLogTimestamp == 0L) {
             // 该应用下没有相关打印日志时间戳
             printLogByPrintType(level, printType);
-            controllerTimestamp.put(controllerType, SystemClock.getInstance().now());
+            controllerTimestamp.put(appPermissionType, SystemClock.getInstance().now());
             return;
         }
         if (SystemClock.now() - lastPrintLogTimestamp > PRINT_LOG_TIME_INTERVAL) {
             printLogByPrintType(level, printType);
-            controllerTimestamp.put(controllerType, SystemClock.getInstance().now());
+            controllerTimestamp.put(appPermissionType, SystemClock.getInstance().now());
         }
     }
 

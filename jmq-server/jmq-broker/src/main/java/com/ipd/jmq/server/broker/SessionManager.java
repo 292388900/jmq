@@ -63,7 +63,7 @@ public class SessionManager extends Service {
 
         this.sessionListener = new EventListener<SessionEvent>() {
             @Override
-            public void onEvent(SessionManager.SessionEvent event) {
+            public void onEvent(SessionEvent event) {
                 if (isStarted()) {
                     try {
                         switch (event.getType()) {
@@ -484,7 +484,7 @@ public class SessionManager extends Service {
         sequentialManager.checkAndBindProducer(app, topic, producerId);
     }
 
-    protected void onRemoveProducer(final com.ipd.jmq.common.network.v3.session.Producer producer) throws JMQException {
+    protected void onRemoveProducer(final Producer producer) throws JMQException {
         sequentialManager.unbindProducer(producer);
     }
 

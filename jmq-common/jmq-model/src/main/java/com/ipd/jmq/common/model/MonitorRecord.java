@@ -1,9 +1,11 @@
 package com.ipd.jmq.common.model;
 
+import java.io.Serializable;
+
 /**
  * 监控对象
  */
-public class MonitorRecord {
+public class MonitorRecord implements Cloneable,Serializable {
     //监控指标
     private String metric;
     //机器
@@ -24,6 +26,11 @@ public class MonitorRecord {
     private double value;
 
     public MonitorRecord() {
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 
     public MonitorRecord(String metric, String host, String broker, String topic, String app, double value) {

@@ -1,12 +1,12 @@
 package com.ipd.jmq.server.broker.netty.protocol;
 
-import com.ipd.jmq.common.network.netty.protocol.telnet.TelnetProtocol;
+import com.ipd.jmq.common.network.v3.netty.telnet.TelnetProtocol;
 import com.ipd.jmq.common.network.v3.netty.telnet.base.AuthenticatedEnterHandler;
 import com.ipd.jmq.common.network.v3.netty.telnet.base.TelnetChannelHandler;
 import com.ipd.jmq.common.network.CommandHandlerFactory;
-import com.ipd.jmq.common.network.netty.codec.Encoder;
-import com.ipd.jmq.common.network.netty.protocol.telnet.TelnetDecoder;
-import com.ipd.jmq.common.network.netty.protocol.telnet.TelnetEncoder;
+import com.ipd.jmq.common.network.v3.codec.Encoder;
+import com.ipd.jmq.common.network.v3.netty.telnet.TelnetServerDecoder;
+import com.ipd.jmq.common.network.v3.netty.telnet.TelnetServerEncoder;
 import io.netty.channel.ChannelHandler;
 
 /**
@@ -27,8 +27,8 @@ public class ManagementProtocol extends TelnetProtocol {
     @Override
     public ChannelHandler[] channelHandlers() {
         return new ChannelHandler[]{
-                new TelnetDecoder(factory, prompt, maxHistorySize, new AuthenticatedEnterHandler(factory)),
-                new TelnetEncoder(prompt, encoder),
+                new TelnetServerDecoder(factory, prompt, maxHistorySize, new AuthenticatedEnterHandler(factory)),
+                new TelnetServerEncoder(prompt, encoder),
                 new TelnetChannelHandler()};
     }
 }

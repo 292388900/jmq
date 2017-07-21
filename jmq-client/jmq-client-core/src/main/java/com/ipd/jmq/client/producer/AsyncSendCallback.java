@@ -1,8 +1,8 @@
 package com.ipd.jmq.client.producer;
 
 import com.ipd.jmq.common.network.v3.command.PutMessage;
-import com.ipd.jmq.common.network.command.Command;
-import com.ipd.jmq.common.network.command.CommandCallback;
+import com.ipd.jmq.common.network.v3.command.Command;
+import com.ipd.jmq.common.network.v3.command.CommandCallback;
 
 /**
  * 异步回调接口

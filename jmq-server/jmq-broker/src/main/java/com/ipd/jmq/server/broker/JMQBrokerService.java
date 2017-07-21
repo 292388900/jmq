@@ -5,44 +5,41 @@ import com.ipd.jmq.common.cluster.ClusterRole;
 import com.ipd.jmq.common.network.ServerConfig;
 import com.ipd.jmq.common.network.Transport;
 import com.ipd.jmq.common.network.TransportEvent;
+
 import com.ipd.jmq.common.network.v3.netty.NettyClient;
+import com.ipd.jmq.common.network.v3.netty.Protocol;
+import com.ipd.jmq.common.network.v3.netty.telnet.base.AuthHandler;
+import com.ipd.jmq.common.network.v3.protocol.telnet.ClearHandler;
+import com.ipd.jmq.common.network.v3.protocol.telnet.ExitHandler;
+import com.ipd.jmq.common.network.v3.protocol.telnet.HelpHandler;
 import com.ipd.jmq.common.network.v3.session.Connection;
+import com.ipd.jmq.registry.listener.ConnectionEvent;
+import com.ipd.jmq.registry.listener.ConnectionListener;
 import com.ipd.jmq.replication.*;
+import com.ipd.jmq.server.broker.archive.ArchiveManager;
 import com.ipd.jmq.server.broker.cluster.ClusterManager;
 import com.ipd.jmq.server.broker.cluster.SequentialManager;
-import com.ipd.jmq.server.broker.handler.telnet.PermiQueryHandler;
+import com.ipd.jmq.server.broker.dispatch.DispatchManager;
 import com.ipd.jmq.server.broker.dispatch.DispatchService;
-//import com.ipd.jmq.election.RaftRoleDecider;
-import  com.ipd.jmq.server.broker.election.RoleDecider;
-import  com.ipd.jmq.server.broker.election.RoleEvent;
+import com.ipd.jmq.server.broker.election.RoleDecider;
+import com.ipd.jmq.server.broker.election.RoleEvent;
 import com.ipd.jmq.server.broker.handler.*;
-import com.ipd.jmq.common.network.v3.netty.telnet.base.AuthHandler;
+import com.ipd.jmq.server.broker.handler.telnet.BrokerHandler;
 import com.ipd.jmq.server.broker.handler.telnet.MonitorHandler;
+import com.ipd.jmq.server.broker.handler.telnet.PermiQueryHandler;
+import com.ipd.jmq.server.broker.handler.telnet.TopicHandler;
 import com.ipd.jmq.server.broker.monitor.BrokerMonitor;
 import com.ipd.jmq.server.broker.netty.ManagementServer;
 import com.ipd.jmq.server.broker.netty.MessagingServer;
 import com.ipd.jmq.server.broker.netty.protocol.MessagingProtocol;
 import com.ipd.jmq.server.broker.offset.OffsetManager;
-//import com.ipd.jmq.server.broker.retry.RetryManagerDummy;
+import com.ipd.jmq.server.broker.profile.ClientStatManager;
+import com.ipd.jmq.server.broker.registry.WebRegistry;
+import com.ipd.jmq.server.broker.retry.RetryManager;
 import com.ipd.jmq.server.broker.service.BrokerService;
 import com.ipd.jmq.server.broker.utils.BrokerUtils;
-import com.ipd.jmq.server.context.ContextConfig;
 import com.ipd.jmq.server.context.ContextManager;
-import com.ipd.jmq.server.broker.dispatch.DispatchManager;
-import com.ipd.jmq.server.broker.profile.ClientStatManager;
-import com.ipd.jmq.server.broker.registry.DynamicZkRegistry;
-import com.ipd.jmq.server.broker.registry.WebRegistry;
-//import com.ipd.jmq.server.broker.retry.RetryManager;
 import com.ipd.jmq.server.store.*;
-import com.ipd.jmq.common.network.netty.Protocol;
-import com.ipd.jmq.common.network.protocol.telnet.ClearHandler;
-import com.ipd.jmq.common.network.protocol.telnet.ExitHandler;
-import com.ipd.jmq.common.network.protocol.telnet.HelpHandler;
-import com.ipd.jmq.registry.Registry;
-import com.ipd.jmq.registry.RegistryFactory;
-import com.ipd.jmq.registry.listener.ConnectionEvent;
-import com.ipd.jmq.registry.listener.ConnectionListener;
-import com.ipd.jmq.registry.zookeeper.ZKRegistry;
 import com.ipd.jmq.toolkit.URL;
 import com.ipd.jmq.toolkit.concurrent.EventListener;
 import com.ipd.jmq.toolkit.concurrent.NamedThreadFactory;
@@ -58,7 +55,7 @@ import com.ipd.jmq.toolkit.time.SystemClock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -92,7 +89,7 @@ public class JMQBrokerService extends Service {
     //管理服务
     protected ManagementServer managementServer;
     // 重试管理
-//    protected RetryManager retryManager;
+    protected RetryManager retryManager;
     // 当前Broker
     protected Broker broker;
     // 数据分发服务
@@ -124,13 +121,16 @@ public class JMQBrokerService extends Service {
     // broker监控
     protected BrokerMonitor brokerMonitor;
     // 归档日志
-//    protected ArchiveManager archiveManager;
+    protected ArchiveManager archiveManager;
     // 客户端性能统计
     protected ClientStatManager clientStatManager;
     // 顺序消息管理器
     protected SequentialManager sequentialManager;
     // 命令处理器工厂
     protected DefaultHandlerFactory handlerFactory;
+    protected TelnetHandlerFactory telnetFactory;
+    protected HelpHandler helpHandler;
+    protected ExitHandler exitHandler;
     // 迁移管理器
     protected LocalOffsetManager localOffsetManager;
 
@@ -151,7 +151,104 @@ public class JMQBrokerService extends Service {
     protected List<BrokerService> brokerServices;
     protected List<Protocol> protocols = new CopyOnWriteArrayList<Protocol>();
 
+    protected GetMessageHandler getMessageHandler;
+    protected RetryMessageHandler retryMessageHandler;
+    protected AckMessageHandler ackMessageHandler;
+    protected SessionHandler sessionHandler;
+    protected PutMessageHandler putMessageHandler;
+    protected TxTransactionHandler txTransactionHandler;
+    protected TxFeedbackHandler feedbackHandler;
+    protected MetadataHandler metadataHandler;
+    protected AuthHandler authHandler;
+    protected MonitorHandler monitorHandler;
+    protected PermiQueryHandler permiQueryHandler;
+    protected TopicHandler topicHandler;
+    protected BrokerHandler brokerHandler;
+
     public JMQBrokerService() {
+    }
+
+    public void setTelnetFactory(TelnetHandlerFactory telnetFactory) {
+        this.telnetFactory = telnetFactory;
+    }
+
+    public void setHandlerFactory(DefaultHandlerFactory handlerFactory) {
+        this.handlerFactory = handlerFactory;
+    }
+
+    public void setRetryMessageHandler(RetryMessageHandler retryMessageHandler) {
+        this.retryMessageHandler = retryMessageHandler;
+    }
+
+    public void setExitHandler(ExitHandler exitHandler) {
+        this.exitHandler = exitHandler;
+    }
+
+    public void setHelpHandler(HelpHandler helpHandler) {
+        this.helpHandler = helpHandler;
+    }
+
+    public void setGetMessageHandler(GetMessageHandler getMessageHandler) {
+        this.getMessageHandler = getMessageHandler;
+    }
+
+    public void setAckMessageHandler(AckMessageHandler ackMessageHandler) {
+        this.ackMessageHandler = ackMessageHandler;
+    }
+
+    public void setSessionHandler(SessionHandler sessionHandler) {
+        this.sessionHandler = sessionHandler;
+    }
+
+    public void setPutMessageHandler(PutMessageHandler putMessageHandler) {
+        this.putMessageHandler = putMessageHandler;
+    }
+
+    public void setTxTransactionHandler(TxTransactionHandler txTransactionHandler) {
+        this.txTransactionHandler = txTransactionHandler;
+    }
+
+    public void setStore(Store store) {
+        this.store = store;
+    }
+
+    public void setStoreUnsafe(StoreUnsafe storeUnsafe) {
+        this.storeUnsafe = storeUnsafe;
+    }
+
+    public void setArchiveManager(ArchiveManager archiveManager) {
+        this.archiveManager = archiveManager;
+    }
+
+    public void setFeedbackHandler(TxFeedbackHandler feedbackHandler) {
+        this.feedbackHandler = feedbackHandler;
+    }
+
+    public void setMetadataHandler(MetadataHandler metadataHandler) {
+        this.metadataHandler = metadataHandler;
+    }
+
+    public void setAuthHandler(AuthHandler authHandler) {
+        this.authHandler = authHandler;
+    }
+
+    public void setMonitorHandler(MonitorHandler monitorHandler) {
+        this.monitorHandler = monitorHandler;
+    }
+
+    public void setPermiQueryHandler(PermiQueryHandler permiQueryHandler) {
+        this.permiQueryHandler = permiQueryHandler;
+    }
+
+    public void setReplicationMaster(ReplicationMasterService replicationMaster) {
+        this.replicationMaster = replicationMaster;
+    }
+
+
+
+
+    public void setRetryManager(RetryManager retryManager) {
+        this.retryManager = retryManager;
     }
 
     public JMQBrokerService(BrokerConfig config) {
@@ -160,6 +257,58 @@ public class JMQBrokerService extends Service {
 
     public void setConfig(BrokerConfig config) {
         this.config = config;
+    }
+
+    public void setScheduler(Scheduler scheduler) {
+        this.scheduler = scheduler;
+    }
+
+    public void setClusterManager(ClusterManager clusterManager) {
+        this.clusterManager = clusterManager;
+    }
+
+    public void setLocalOffsetManager(LocalOffsetManager localOffsetManager) {
+        this.localOffsetManager = localOffsetManager;
+    }
+
+    public void setSessionManager(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
+    }
+
+    public void setSequentialManager(SequentialManager sequentialManager) {
+        this.sequentialManager = sequentialManager;
+    }
+
+    public void setDispatchService(DispatchService dispatchService) {
+        this.dispatchService = dispatchService;
+    }
+
+    public void setBrokerMonitor(BrokerMonitor brokerMonitor) {
+        this.brokerMonitor = brokerMonitor;
+    }
+
+    public void setOffsetManager(OffsetManager offsetManager) {
+        this.offsetManager = offsetManager;
+    }
+
+    public void setContextManager(ContextManager contextManager) {
+        this.contextManager = contextManager;
+    }
+
+    public void setTransactionManager(TxTransactionManager transactionManager) {
+        this.transactionManager = transactionManager;
+    }
+
+    public void setLongPullManager(LongPullManager longPullManager) {
+        this.longPullManager = longPullManager;
+    }
+
+    public void setTopicHandler(TopicHandler topicHandler) {
+        this.topicHandler = topicHandler;
+    }
+
+    public void setBrokerHandler(BrokerHandler brokerHandler) {
+        this.brokerHandler = brokerHandler;
     }
 
     private List<Protocol> loadProtocols() {
@@ -183,10 +332,13 @@ public class JMQBrokerService extends Service {
     /**
      * 验证
      *
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     protected void validate() throws Exception {
         super.validate();
+        if (null != brokerMonitor) {
+            brokerMonitor.setBrokerStartTime(SystemClock.now());
+        }
         Preconditions.checkArgument(config != null, "config can not be null");
 
         ServerConfig nettyServerConfig = config.getServerConfig();
@@ -197,7 +349,6 @@ public class JMQBrokerService extends Service {
             nettyServerConfig.setIp(Ipv4.getLocalIp());
         }
 
-
         if (waterMarkPersistentFile == null) {
             waterMarkPersistentFile = new File(config.getConfigPath() + "/water_mark.save");
         }
@@ -205,56 +356,20 @@ public class JMQBrokerService extends Service {
         NettyClient nettyClient = config.getNettyClient();
 
         Preconditions.checkState(nettyClient != null, "config is invalid. nettyClient can not be null");
-
-      /*  // 纠正客户端数据包大小，便于同步数据块
-        ClientConfig nettyConfig = nettyClient.getConfig();
-        if (haConfig.getBlockSize() + 1024 > nettyConfig.getFrameMaxSize()) {
-            nettyConfig.setFrameMaxSize(haConfig.getBlockSize() + 1024);
-        }*/
-        // 打开注册中心
-        if (config.getRegistry() == null) {
-            Preconditions.checkState(config.getRegistryUrl() != null && !config.getRegistryUrl().isEmpty(),
-                    "config is invalid. registry & registryUrl can not be both null");
-            Registry registry = null;
-
-
-            RegistryFactory factory = new RegistryFactory(config.getRegistryUrl());
-            if (factory != null) {
-                registry = factory.create();
-            }
-            if (registry == null) {
-                registry = PluginUtil.createService(Registry.class, URL.valueOf(config.getRegistryUrl()));
-            }
-            Preconditions.checkState(registry != null, "config is invalid. registryUrl is not implement");
-
-            if (config.getRegistryInfoFromWeb() != null && !config.getRegistryInfoFromWeb().isEmpty() && registry instanceof ZKRegistry) {
-                DynamicZkRegistry dynamicZkRegistry = new DynamicZkRegistry((ZKRegistry) registry);
-                dynamicZkRegistry.setRegistryInfoURL(config.getRegistryInfoFromWeb());
-                //拉取web注册中心数据
-                dynaZkRegistrySchedule.scheduleAtFixedRate(dynamicZkRegistry, config.getDynamicZkRegistryInterval(), config.getDynamicZkRegistryInterval(), TimeUnit.MILLISECONDS);
-                registry = dynamicZkRegistry;
-            }
-
-            config.setRegistry(registry);
-        }
-        if (contextManager == null) {
-            contextManager = new ContextManager(new ContextConfig(config.getConfigPath(), config.isCompressed(), config.getRegistry()));
-        }
-
-        if (sequentialManager == null) {
-            sequentialManager = new SequentialManager(config);
-        }
-        // 创建集群管理
-        if (clusterManager == null) {
-            clusterManager = new ClusterManager(config);
-            clusterManager.setSequentialManager(sequentialManager);
-            sequentialManager.setClusterManager(clusterManager);
+        clusterManager.setBrokerMonitor(brokerMonitor);
+        sequentialManager.setBrokerMonitor(brokerMonitor);
+        if (dispatchService != null) {
+            ((DispatchManager)dispatchService).setSessionManager(sessionManager);
+            ((DispatchManager)dispatchService).setClusterManager(clusterManager);
+            ((DispatchManager)dispatchService).setRetryManager(retryManager);
+            ((DispatchManager)dispatchService).setConfig(config);
+            ((DispatchManager)dispatchService).setOffsetManager(offsetManager);
         }
         if (broker == null) {
             // 得到本地Broker对象
             broker = clusterManager.getBroker();
         }
-        if (broker.getGroup() != null && !broker.getGroup().isEmpty()) {
+        if (null!=broker && broker.getGroup() != null && !broker.getGroup().isEmpty()) {
             config.setGroup(broker.getGroup());
         }
 
@@ -282,45 +397,22 @@ public class JMQBrokerService extends Service {
             }
         }
 
-        if (sessionManager == null) {
-            sessionManager = new SessionManager();
-            sessionManager.setSequentialManager(sequentialManager);
-            sequentialManager.setSessionManager(sessionManager);
-        }
 
-        if (scheduler == null) {
-            scheduler = new Scheduler(config.getDelayThreads());
-            scheduler.start();
-        }
-
+        scheduler.start();
         StoreConfig storeConfig = config.getStoreConfig();
-        if (config.getStore() == null && storeConfig == null) {
-            throw new IllegalStateException("config is invalid. storeConfig or store can not be both null");
-        } else if (config.getStore() == null) {
-            JMQStore jmqStore = new JMQStore(storeConfig, clusterManager.getBroker());
-            StoreService storeService = new StoreService(storeConfig, clusterManager.getBroker(), clusterManager);
-            storeService.setStore(jmqStore);
-            config.setStore(storeService);
-            this.store = storeService;
-            this.storeUnsafe = storeService;
-            jmqStore.addListener(new StoreListener() {
-                @Override
-                public void onEvent(StoreEvent storeEvent) {
-                    if (storeEvent.getType() == StoreEvent.EventType.FLUSHED) {
-                        flushedJournalOffset = storeEvent.getFlushedJournalOffset();
-                        updateWaterMark(flushedJournalOffset);
+        ((JMQStore)this.store).setCacheService(config.getCacheService());
+        ((JMQStore)this.store).setConfig(storeConfig);
+        ((JMQStore)this.store).setBroker(clusterManager.getBroker());
+        ((JMQStore)this.store).addListener(new StoreListener() {
+            @Override
+            public void onEvent(StoreEvent storeEvent) {
+                if (storeEvent.getType() == StoreEvent.EventType.FLUSHED) {
+                    flushedJournalOffset = storeEvent.getFlushedJournalOffset();
+                    updateWaterMark(flushedJournalOffset);
 //                        updateWaterMark(Math.min(replicatedJournalOffset, flushedJournalOffset));
-                    }
                 }
-            });
-        } else {
-            this.store = config.getStore();
-            this.storeUnsafe = (StoreUnsafe) store;
-            if (config.getStoreConfig() == null) {
-                config.setStoreConfig(config.getStore().getConfig());
-                storeConfig = config.getStoreConfig();
             }
-        }
+        });
 
         Preconditions.checkState(storeUnsafe != null, "storeUnsafe is null, that will be mis function on replication.");
 
@@ -330,14 +422,9 @@ public class JMQBrokerService extends Service {
             long space = file.getTotalSpace() * storeConfig.getMaxDiskSpaceUsage() / 100;
             storeConfig.setMaxDiskSpace(space);
         }
+        offsetManager.setStore(store);
 
-        if (offsetManager == null) {
-            offsetManager = new OffsetManager(config.getOffsetConfig());
-            offsetManager.setStore(store);
-            offsetManager.setClusterManager(clusterManager);
-        }
-
-        if (replicationMaster == null) {
+        if (replicationMaster != null) {
             ReplicationConfig repConfig = config.getReplicationConfig();
             ServerConfig serverConfig = repConfig.getServerConfig();
             if (serverConfig == null) {
@@ -348,8 +435,10 @@ public class JMQBrokerService extends Service {
             serverConfig.setIp(broker.getIp());
             serverConfig.setPort(broker.getReplicationPort());
             serverConfig.setEpoll(this.config.getServerConfig().isEpoll());
-
-            replicationMaster = new ReplicationMasterService(broker, repConfig, haListener, store);
+            replicationMaster.setMaster(broker);
+            replicationMaster.setConfig(repConfig);
+            replicationMaster.setReplicationListener(haListener);
+            replicationMaster.setStore(store);
         }
 
         // 创建客户端性能统计
@@ -378,58 +467,35 @@ public class JMQBrokerService extends Service {
                     TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(config.getPutQueueCapacity()),
                     new NamedThreadFactory("JMQ_SERVER_PUT_EXECUTOR"));
         }
-//        if (retryManager == null) {
-//            retryManager = new RetryManagerDummy(clusterManager, contextManager, scheduler, config);
-//        }
 
-        if (dispatchService == null) {
-            dispatchService = new DispatchManager(sessionManager, clusterManager, config, offsetManager);
-            sequentialManager.setDispatchService(dispatchService);
-            ((StoreService) store).setDispatchService(dispatchService);
+
+        if(null!=longPullManager){
+            longPullManager.setExecutorService(getExecutor);
+            longPullManager.setBrokerMonitor(brokerMonitor);
+        }
+        if(null!=transactionManager){
+            transactionManager.setExecutorService(getExecutor);
+            transactionManager.setBrokerMonitor(brokerMonitor);
         }
 
-        if (brokerMonitor == null) {
-            brokerMonitor = new BrokerMonitor(sessionManager, clusterManager, dispatchService, config,
-                    replicationMaster, SystemClock.now());
-            dispatchService.setBrokerMonitor(brokerMonitor);
-            clusterManager.setBrokerMonitor(brokerMonitor);
-            sequentialManager.setBrokerMonitor(brokerMonitor);
-        }
 
-//        if (archiveManager == null) {
-//            archiveManager = new ArchiveManager(storeConfig);
-//        }
-        if (longPullManager == null) {
-            longPullManager = new LongPullManager(getExecutor, sessionManager, clusterManager, dispatchService, config, brokerMonitor);
-        }
-        if (transactionManager == null) {
-            transactionManager = new TxTransactionManager(clusterManager, config, brokerMonitor, getExecutor, sessionManager);
-        }
-
-        if (handlerFactory == null) {
-            GetMessageHandler getMessageHandler =
-                    new GetMessageHandler(getExecutor, sessionManager, clusterManager, dispatchService, longPullManager,
-                            brokerMonitor, config);
-            AckMessageHandler ackMessageHandler =
-                    new AckMessageHandler(getExecutor, sessionManager, clusterManager, dispatchService,config.getStore(), brokerMonitor);
-//            RetryMessageHandler retryMessageHandler =
-//                    new RetryMessageHandler(getExecutor, sessionManager, clusterManager, dispatchService, config, scheduler, brokerMonitor);
-            SessionHandler sessionHandler =
-                    new SessionHandler(putExecutor, sessionManager, clusterManager, config, clientStatManager, brokerMonitor);
-            PutMessageHandler putMessageHandler = new PutMessageHandler(putExecutor, sessionManager, clusterManager, dispatchService,
-                    transactionManager, config, brokerMonitor);
-            TxTransactionHandler txTransactionHandler = new TxTransactionHandler(putExecutor, sessionManager,
-                    clusterManager, transactionManager);
-            TxFeedbackHandler feedbackHandler = new TxFeedbackHandler(putExecutor, sessionManager, clusterManager,
-                    transactionManager);
-            MetadataHandler metadataHandler = new MetadataHandler(putExecutor, sessionManager, clusterManager,
-                    config, brokerMonitor);
-
+            getMessageHandler.setExecutorService(getExecutor);
+            getMessageHandler.setBrokerMonitor(brokerMonitor);
+            ackMessageHandler.setExecutorService(getExecutor);
+            ackMessageHandler.setBrokerMonitor(brokerMonitor);
+            sessionHandler.setExecutorService(putExecutor);
+            sessionHandler.setBrokerMonitor(brokerMonitor);
+            putMessageHandler.setExecutorService(putExecutor);
+            putMessageHandler.setBrokerMonitor(brokerMonitor);
+            txTransactionHandler.setExecutorService(putExecutor);
+            feedbackHandler.setExecutorService(putExecutor);
+            metadataHandler.setExecutorService(putExecutor);
+            retryMessageHandler.setExecutorService(getExecutor);
+            retryMessageHandler.setBrokerMonitor(brokerMonitor);
             // 注册JMQ handlers
-            handlerFactory = new DefaultHandlerFactory().register(ackMessageHandler).register(getMessageHandler)
+            handlerFactory.register(ackMessageHandler).register(getMessageHandler).register(retryMessageHandler)
                     .register(sessionHandler).register(txTransactionHandler)
                     .register(putMessageHandler).register(feedbackHandler).register(metadataHandler);
-        }
 
         if (nettyServer == null) {
             protocols = loadProtocols();
@@ -474,19 +540,18 @@ public class JMQBrokerService extends Service {
             serverConfig.setWorkerThreads(5);
 
             // telnet handler
-            AuthHandler authHandler = new AuthHandler(config.getAdminUser(), config.getAdminPassword());
-            MonitorHandler monitorHandler = new MonitorHandler(brokerMonitor, config.getAdminUser(), config.getAdminPassword());
-            PermiQueryHandler permiQueryHandler = new PermiQueryHandler(clusterManager);
-
+            authHandler.setAdminUser(config.getAdminUser());
+            authHandler.setAdminPassword(config.getAdminPassword());
+            monitorHandler.setAdminUser(config.getAdminUser());
+            monitorHandler.setAdminPassword(config.getAdminPassword());
+            monitorHandler.setBrokerMonitor(brokerMonitor);
             // 注册Telnet handlers
-            TelnetHandlerFactory telnetFactory = new TelnetHandlerFactory().register(new HelpHandler()).register(new ExitHandler())
-                    .register(new ClearHandler()).register(authHandler).register(monitorHandler).register(permiQueryHandler);
+            telnetFactory.register(helpHandler).register(exitHandler)
+                    .register(new ClearHandler()).register(authHandler).register(monitorHandler).register(permiQueryHandler)
+                    .register(brokerHandler).register(topicHandler);
             managementServer = new ManagementServer(serverConfig, null, null, null, telnetFactory);
         }
 
-        if (localOffsetManager == null) {
-            localOffsetManager = new LocalOffsetManager(config, clusterManager, dispatchService);
-        }
 
         fixedRateSchedule.scheduleWithFixedDelay(new Runnable() {
             @Override
@@ -584,7 +649,10 @@ public class JMQBrokerService extends Service {
         // 启动长轮询
         longPullManager.start();
         // 启动重试
-        //retryManager.start();
+        if(null!=retryManager){
+            //retryManager.start();
+        }
+
 
         // broker monitor
         brokerMonitor.start();
@@ -602,11 +670,6 @@ public class JMQBrokerService extends Service {
         brokerMonitor.setBrokerStartTime(SystemClock.now());
 
         localOffsetManager.start();
-
-//        if (roleDecider instanceof RaftRoleDecider) {
-//            RaftRoleDecider raftRoleDecider = (RaftRoleDecider) roleDecider;
-//            raftRoleDecider.setWaterMark(waterMark);
-//        }
 
         logger.info("broker server is started");
     }
@@ -657,10 +720,10 @@ public class JMQBrokerService extends Service {
         if (contextManager != null) {
             contextManager.removeListener(config);
         }
-//                .close(archiveManager).close(retryManager)
+//                .close(archiveManager)
         Close.close(nettyServer).close(transactionManager)
                 .close(longPullManager).close(dispatchService).close(putExecutor).close(getExecutor)
-                .close(clusterManager).close(nettyClient).close(store).close(brokerMonitor).close(clientStatManager).close(scheduler).close(localOffsetManager);
+                .close(clusterManager).close(nettyClient).close(store).close(brokerMonitor).close(clientStatManager).close(scheduler).close(localOffsetManager).close(retryManager);
         logger.info("broker server is stopped.");
     }
 

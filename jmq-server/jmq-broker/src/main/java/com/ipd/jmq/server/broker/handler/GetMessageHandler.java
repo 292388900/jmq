@@ -14,10 +14,7 @@ import com.ipd.jmq.server.broker.dispatch.PullResult;
 import com.ipd.jmq.server.broker.monitor.BrokerMonitor;
 import com.ipd.jmq.common.network.Transport;
 import com.ipd.jmq.common.network.TransportException;
-import com.ipd.jmq.common.network.command.Command;
-import com.ipd.jmq.common.network.command.CommandCallback;
-import com.ipd.jmq.common.network.command.Direction;
-import com.ipd.jmq.common.network.command.Header;
+
 import com.ipd.jmq.toolkit.lang.Preconditions;
 import com.ipd.jmq.toolkit.time.MilliPeriod;
 import org.slf4j.Logger;
@@ -35,7 +32,7 @@ public class GetMessageHandler extends AbstractHandler implements JMQHandler  {
     protected LongPullManager longPullManager;
     protected ClusterManager clusterManager;
     protected BrokerMonitor brokerMonitor;
-
+    public GetMessageHandler(){}
     public GetMessageHandler(ExecutorService executorService, SessionManager sessionManager,
                              ClusterManager clusterManager, DispatchService dispatchService, LongPullManager longPullManager,
                              BrokerMonitor brokerMonitor, BrokerConfig brokerConfig) {
@@ -56,7 +53,27 @@ public class GetMessageHandler extends AbstractHandler implements JMQHandler  {
         this.longPullManager = longPullManager;
         this.executorService = executorService;
     }
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
+    }
+    public void setSessionManager(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
+    }
+    public void setDispatchService(DispatchService dispatchService) {
+        this.dispatchService = dispatchService;
+    }
 
+    public void setLongPullManager(LongPullManager longPullManager) {
+        this.longPullManager = longPullManager;
+    }
+
+    public void setClusterManager(ClusterManager clusterManager) {
+        this.clusterManager = clusterManager;
+    }
+
+    public void setBrokerMonitor(BrokerMonitor brokerMonitor) {
+        this.brokerMonitor = brokerMonitor;
+    }
 
     protected JMQHeader createAckHeader(final Command request) {
         return new JMQHeader(Direction.RESPONSE, CmdTypes.GET_MESSAGE_ACK, request.getHeader().getRequestId(),

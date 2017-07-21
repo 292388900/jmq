@@ -12,13 +12,16 @@
     <artifactId>jmq-broker</artifactId>
     <version>3.0.0</version>
     <dependencies>
-
         <dependency>
             <groupId>com.ipd.jmq</groupId>
             <artifactId>registry-zookeeper</artifactId>
             <version>3.0.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.ipd.jmq</groupId>
+            <artifactId>jmq-network</artifactId>
+            <version>3.0.0</version>
+        </dependency>
         <dependency>
             <groupId>com.ipd.jmq</groupId>
             <artifactId>jmq-model</artifactId>
@@ -26,15 +29,9 @@
         </dependency>
         <dependency>
             <groupId>com.ipd.jmq</groupId>
-            <artifactId>jmq-cache</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.ipd.jmq</groupId>
             <artifactId>jmq-store</artifactId>
             <version>3.0.0</version>
         </dependency>
-
         <dependency>
             <groupId>com.ipd.jmq</groupId>
             <artifactId>jmq-context</artifactId>
@@ -45,13 +42,6 @@
             <artifactId>jmq-replication</artifactId>
             <version>3.0.0</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.ipd.jmq</groupId>
-            <artifactId>jmq-network</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>

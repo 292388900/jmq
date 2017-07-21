@@ -2,10 +2,7 @@ package com.ipd.jmq.server.broker.handler;
 
 import com.ipd.jmq.common.exception.JMQCode;
 import com.ipd.jmq.common.exception.JMQException;
-import com.ipd.jmq.common.network.v3.command.CmdTypes;
-import com.ipd.jmq.common.network.v3.command.JMQHeader;
-import com.ipd.jmq.common.network.v3.command.TxFeedback;
-import com.ipd.jmq.common.network.v3.command.TxFeedbackAck;
+import com.ipd.jmq.common.network.v3.command.*;
 import com.ipd.jmq.common.network.v3.session.*;
 import com.ipd.jmq.server.broker.SessionManager;
 import com.ipd.jmq.server.broker.TxTransactionManager;
@@ -13,8 +10,6 @@ import com.ipd.jmq.server.broker.cluster.ClusterManager;
 import com.ipd.jmq.server.store.GetTxResult;
 import com.ipd.jmq.common.network.Transport;
 import com.ipd.jmq.common.network.TransportException;
-import com.ipd.jmq.common.network.command.Command;
-import com.ipd.jmq.common.network.command.Direction;
 import com.ipd.jmq.toolkit.lang.Preconditions;
 import com.ipd.jmq.toolkit.time.SystemClock;
 
@@ -25,7 +20,7 @@ import java.util.concurrent.ExecutorService;
  */
 public class TxFeedbackHandler extends AbstractHandler implements JMQHandler {
     private TxTransactionManager transactionManager;
-
+    public TxFeedbackHandler(){}
     public TxFeedbackHandler(ExecutorService executorService, SessionManager sessionManager,
                              ClusterManager clusterManager, TxTransactionManager transactionManager) {
 
@@ -37,6 +32,15 @@ public class TxFeedbackHandler extends AbstractHandler implements JMQHandler {
         this.broker = clusterManager.getBroker();
         this.sessionManager = sessionManager;
         this.executorService = executorService;
+        this.transactionManager = transactionManager;
+    }
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
+    }
+    public void setSessionManager(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
+    }
+    public void setTransactionManager(TxTransactionManager transactionManager) {
         this.transactionManager = transactionManager;
     }
 

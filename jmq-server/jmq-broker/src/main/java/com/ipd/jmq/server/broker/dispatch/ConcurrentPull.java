@@ -40,7 +40,7 @@ public class ConcurrentPull extends Service {
     private OffsetManager offsetManager;
     private BrokerConfig brokerConfig;
 
-
+    public ConcurrentPull(){}
     public ConcurrentPull(DispatchManager dispatchManager, BrokerConfig brokerConfig, OffsetManager offsetManager) {
         this.dispatchManager = dispatchManager;
         this.brokerConfig = brokerConfig;
@@ -48,6 +48,18 @@ public class ConcurrentPull extends Service {
     }
 
     private Thread expireCleaner;
+
+    public void setDispatchManager(DispatchManager dispatchManager) {
+        this.dispatchManager = dispatchManager;
+    }
+
+    public void setOffsetManager(OffsetManager offsetManager) {
+        this.offsetManager = offsetManager;
+    }
+
+    public void setBrokerConfig(BrokerConfig brokerConfig) {
+        this.brokerConfig = brokerConfig;
+    }
 
     @Override
     public void doStart() {

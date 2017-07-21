@@ -802,8 +802,8 @@ public class JournalManager extends Service {
         return request;
     }
 
-    protected void appendJournalLog(final List<? extends JournalLog> journalLogs, final PutResult result) throws Exception {
-        if (journalLogs == null) {
+    protected void appendJournalLog(StoreContext<?> context) throws Exception {
+        if (context == null) {
             return;
         }
         if (!isStarted()) {
@@ -816,21 +816,22 @@ public class JournalManager extends Service {
         }
         long storeTime = SystemClock.now();
         // 设置存储时间
+        PutResult result = context.getResult();
         result.setStoreTime(storeTime);
         List<ByteBuf> buffers = new ArrayList<ByteBuf>();
         int logSize = 0;
         // needSync = true 表示处理需要等待写入journal后返回
         boolean needSync = false;
         // 构造派发请求
-        for (JournalLog journalLog : journalLogs) {
+        for (JournalLog journalLog : context.getLogs()) {
             journalLog.setStoreTime(storeTime);
             ByteBuf buffer = heapBufferPool.get();
             buffer.clear();
             buffers.add(Serializer.serialize(journalLog, buffer));
             logSize += journalLog.getSize();
-            if (journalLog.getType() == JournalLog.TYPE_TX_PRE_MESSAGE) {
-                needSync = true;
-            }
+//            if (journalLog.getType() == JournalLog.TYPE_TX_PRE_MESSAGE) {
+//                needSync = true;
+//            }
         }
 
         FlushRequest flushRequest = new FlushRequest();
@@ -854,7 +855,8 @@ public class JournalManager extends Service {
             flushRequest.setLatch(new CountDownLatch(flush ? 2 : 1));
         }
 
-        JournalEvent journalEvent = new JournalEvent(journalLogs, flushRequest, buffers, flush, null);
+        result.setCode(JMQCode.SE_PENDING);
+        JournalEvent journalEvent = new JournalEvent(context, flushRequest, buffers, flush, null);
         boolean addFlag = flushingMessagesQueue.add(journalEvent, config.getWriteEnqueueTimeout());
         if (!addFlag) {
             // 入队失败，刷盘或复制过慢
@@ -873,23 +875,34 @@ public class JournalManager extends Service {
             } catch (InterruptedException e) {
                 throw new JMQException("the journal appending is interrupted.", JMQCode.SE_FLUSH_TIMEOUT.getCode());
             }
+            result.setCode(JMQCode.SUCCESS);
         }
-        result.setCode(JMQCode.SUCCESS);
         // 增加计数器
         count.incrementAndGet();
     }
 
-    protected void appendJournalLog(final JournalLog journalLog, final PutResult result) throws JMQException {
+    protected PutResult appendJournalLog(final JournalLog journalLog) throws JMQException {
+        final CountDownLatch waitLatch = new CountDownLatch(1);
+        List<JournalLog> list = new ArrayList<JournalLog>(1);
+        list.add(journalLog);
+        StoreContext storeContext = new StoreContext(null, null, list, new Store.ProcessedCallback() {
+            @Override
+            public void onProcessed(StoreContext context) throws JMQException {
+                waitLatch.countDown();
+            }
+        });
         try {
-            List<JournalLog> list = new ArrayList<JournalLog>(1);
-            list.add(journalLog);
-            this.appendJournalLog(list, result);
+            appendJournalLog(storeContext);
         } catch (Exception e) {
             if (e instanceof JMQException) {
                 throw (JMQException) e;
             }
             throw new JMQException(JMQCode.SE_IO_ERROR, e);
         }
+        try {
+            waitLatch.wait();
+        } catch (InterruptedException e) {}
+        return storeContext.getResult();
     }
 
     /**
@@ -906,7 +919,7 @@ public class JournalManager extends Service {
             }
         }
 
-        final List<? extends JournalLog> journalLogs = journalEvent.journalLogs;
+        final List<? extends JournalLog> journalLogs = journalEvent.context.getLogs();
         final List<ByteBuf> buffers = journalEvent.buffers;
         final boolean flush = journalEvent.flush;
         final FlushRequest flushRequest = journalEvent.flushRequest;
@@ -939,6 +952,20 @@ public class JournalManager extends Service {
             offset = journalLog.getJournalOffset();
         }
 
+        // 回收缓冲区，如果出了异常或者超过512K，则由GC回收,复制中的BUFFER不能重用，可能还在进行网络处理
+        for (int i = 0; i < journalLogs.size(); i++) {
+            if (journalLogs.get(i).getSize() < 1024 * 512) {
+                heapBufferPool.release(buffers.get(i));
+            }
+        }
+        buffers.clear();
+
+        journalEvent.context.getResult().setCode(JMQCode.SUCCESS);
+
+        if (journalEvent.context.getCallback() != null) {
+            journalEvent.context.getCallback().onProcessed(journalEvent.context);
+        }
+
         // 设置日志偏移
         flushRequest.setOffset(offset);
         // 设置消息大小
@@ -953,12 +980,6 @@ public class JournalManager extends Service {
             flushRequest.getWrite().end();
         }
 
-        // 回收缓冲区，如果出了异常或者超过512K，则由GC回收,复制中的BUFFER不能重用，可能还在进行网络处理
-        for (int i = 0; i < journalLogs.size(); i++) {
-            if (journalLogs.get(i).getSize() < 1024 * 512) {
-                heapBufferPool.release(buffers.get(i));
-            }
-        }
     }
 
     private void dealBrokerRefMessage(BrokerRefMessage refMessage, ByteBuf buf) throws Exception {
@@ -1332,17 +1353,17 @@ public class JournalManager extends Service {
         // 门闩
         protected final CountDownLatch writeLatch;
         // 消息
-        protected final List<? extends JournalLog> journalLogs;
+        protected final StoreContext context;
         // 缓冲区
         protected final List<ByteBuf> buffers;
         protected final FlushRequest flushRequest;
         // 刷盘标示
         protected final boolean flush;
 
-        public JournalEvent(final List<? extends JournalLog> journalLogs, final FlushRequest flushRequest,
+        public JournalEvent(final StoreContext context, final FlushRequest flushRequest,
                             final List<ByteBuf> buffers, final boolean flush, final CountDownLatch writeLatch) {
             this.writeLatch = writeLatch;
-            this.journalLogs = journalLogs;
+            this.context = context;
             this.buffers = buffers;
             this.flush = flush;
             this.flushRequest = flushRequest;
@@ -1521,7 +1542,7 @@ public class JournalManager extends Service {
                     rollback.setTopic(prepare.getTopic());
                     rollback.setTxId(prepare.getTxId());
                     //回滚事务
-                    appendJournalLog(rollback, new PutResult());
+                    appendJournalLog(rollback);
                     //删除事务
                     inflights.remove(prepare.getTxId());
                     changeInflightCount(prepare.getTopic(), -1);

@@ -2,7 +2,7 @@ package com.ipd.jmq.server.broker.handler;
 
 import com.ipd.jmq.common.network.CommandHandler;
 import com.ipd.jmq.common.network.CommandHandlerFactory;
-import com.ipd.jmq.common.network.command.Command;
+import com.ipd.jmq.common.network.v3.command.Command;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;

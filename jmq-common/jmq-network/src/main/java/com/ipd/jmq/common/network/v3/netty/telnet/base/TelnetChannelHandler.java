@@ -2,7 +2,7 @@ package com.ipd.jmq.common.network.v3.netty.telnet.base;
 
 import com.ipd.jmq.common.network.Transport;
 import com.ipd.jmq.common.network.TransportException;
-import com.ipd.jmq.common.network.netty.Keys;
+import com.ipd.jmq.common.network.v3.netty.Keys;
 import com.ipd.jmq.toolkit.network.Ipv4;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;

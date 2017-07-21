@@ -17,7 +17,7 @@
 package com.ipd.jmq.server.broker.sequence;
 
 /**
- * Provides a base class for you to extend when you want object to maintain a
+ * Provides a base class for you to resource when you want object to maintain a
  * doubly linked list to other objects without using a collection class.
  *
  * @author chirino

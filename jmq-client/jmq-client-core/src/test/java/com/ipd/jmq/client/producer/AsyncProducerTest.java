@@ -6,7 +6,7 @@ import com.ipd.jmq.client.connection.TransportManager;
 import com.ipd.jmq.common.exception.JMQException;
 import com.ipd.jmq.common.message.Message;
 import com.ipd.jmq.common.network.v3.command.PutMessage;
-import com.ipd.jmq.common.network.command.Command;
+import com.ipd.jmq.common.network.v3.command.Command;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;

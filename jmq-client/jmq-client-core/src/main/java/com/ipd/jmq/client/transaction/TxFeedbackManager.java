@@ -16,7 +16,7 @@ import com.ipd.jmq.common.network.v3.command.TxFeedbackAck;
 import com.ipd.jmq.common.network.v3.command.TxStatus;
 import com.ipd.jmq.common.network.v3.session.TransactionId;
 import com.ipd.jmq.common.network.FailoverState;
-import com.ipd.jmq.common.network.command.Command;
+import com.ipd.jmq.common.network.v3.command.Command;
 import com.ipd.jmq.toolkit.concurrent.NamedThreadFactory;
 import com.ipd.jmq.toolkit.service.Service;
 import com.ipd.jmq.toolkit.time.SystemClock;

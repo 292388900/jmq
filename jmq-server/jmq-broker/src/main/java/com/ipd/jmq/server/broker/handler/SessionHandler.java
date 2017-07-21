@@ -17,9 +17,6 @@ import com.ipd.jmq.server.broker.profile.ClientStatManager;
 import com.ipd.jmq.server.broker.utils.BrokerUtils;
 import com.ipd.jmq.common.network.Transport;
 import com.ipd.jmq.common.network.TransportException;
-import com.ipd.jmq.common.network.command.Command;
-import com.ipd.jmq.common.network.command.Direction;
-import com.ipd.jmq.common.network.command.Header;
 import com.ipd.jmq.toolkit.lang.Preconditions;
 import com.ipd.jmq.toolkit.network.Ipv4;
 import org.slf4j.Logger;
@@ -42,7 +39,7 @@ public class SessionHandler extends AbstractHandler implements JMQHandler {
     private Authentication authentication;
     private ClientStatManager clientStatManager;
     private static String NEED_MIN_VERSION = "2.0.0";
-
+    public SessionHandler(){}
     public SessionHandler(ExecutorService executorService, SessionManager sessionManager, ClusterManager clusterManager,
                           final BrokerConfig config, ClientStatManager clientStatManager, BrokerMonitor brokerMonitor) {
 
@@ -62,6 +59,31 @@ public class SessionHandler extends AbstractHandler implements JMQHandler {
         this.clientStatManager = clientStatManager;
     }
 
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
+    }
+
+
+    public void setSessionManager(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
+    }
+    public void setConfig(BrokerConfig config) {
+        this.config = config;
+        this.authentication = config.getAuthentication();
+    }
+
+    public void setBrokerMonitor(BrokerMonitor brokerMonitor) {
+        this.brokerMonitor = brokerMonitor;
+    }
+
+    public void setClusterManager(ClusterManager clusterManager) {
+        this.broker = clusterManager.getBroker();
+        this.clusterManager = clusterManager;
+    }
+
+    public void setClientStatManager(ClientStatManager clientStatManager) {
+        this.clientStatManager = clientStatManager;
+    }
 
     /**
      * 心跳监控

@@ -19,7 +19,7 @@ public class ControllerPolicy {
     // 当前分组
     private String currentGroup;
     // 控制详情,key为控制类别,value为控制内容
-    private Map<ControllerType, ControllerParse> controllerDetail = new EnumMap<ControllerType, ControllerParse>(ControllerType.class);
+    private Map<AppPermissionType, ControllerParse> controllerDetail = new EnumMap<AppPermissionType, ControllerParse>(AppPermissionType.class);
     // 分组
     private String group;
     // 主题
@@ -27,15 +27,15 @@ public class ControllerPolicy {
     // 应用
     private String app;
 
-    public ControllerPolicy(ControllerType controllerType, String controllerInfo) {
-        this(controllerType, controllerInfo, null);
+    public ControllerPolicy(AppPermissionType appPermissionType, String controllerInfo) {
+        this(appPermissionType, controllerInfo, null);
     }
 
-    public ControllerPolicy(ControllerType controllerType, String controllerInfo, String currentGroup) {
+    public ControllerPolicy(AppPermissionType appPermissionType, String controllerInfo, String currentGroup) {
         this.currentGroup = currentGroup;
-        ControllerParse controllerContent = parseControllerInfo(controllerType, controllerInfo);
+        ControllerParse controllerContent = parseControllerInfo(appPermissionType, controllerInfo);
         if (controllerContent != null) {
-            this.controllerDetail.put(controllerType, controllerContent);
+            this.controllerDetail.put(appPermissionType, controllerContent);
         }
     }
 
@@ -43,12 +43,12 @@ public class ControllerPolicy {
      * 根据控制信息获取元信息
      * 控制信息包含控制内容或分组,主题与应用的组合
      * 例如:content@jmq1@@topic@app
-     * @param controllerType
+     * @param appPermissionType
      * @param controllerInfo
      * @return
      */
-    private ControllerParse parseControllerInfo(ControllerType controllerType, String controllerInfo) {
-        if (controllerType == null || controllerInfo == null) {
+    private ControllerParse parseControllerInfo(AppPermissionType appPermissionType, String controllerInfo) {
+        if (appPermissionType == null || controllerInfo == null) {
             return null;
         }
         // 获取内容
@@ -73,12 +73,12 @@ public class ControllerPolicy {
         }
         ControllerParse controllerParse = new ControllerParseImpl();
         Map<String, String> controllerContent = null;
-        if (controllerType == ControllerType.TOPIC_BROKER_PERMISSION) {
+        if (appPermissionType == AppPermissionType.TOPIC_BROKER_PERMISSION) {
             controllerContent = parseTopicBrokerPermission(content);
             if (controllerContent != null && !controllerContent.isEmpty()) {
                 controllerParse.setParseContent(controllerContent);
             }
-        } else if (controllerType == ControllerType.APP_CLIENT_IP_LIMIT) {
+        } else if (appPermissionType == AppPermissionType.APP_CLIENT_IP_LIMIT) {
             controllerContent = parseAppClientIPLimit(content);
             if (controllerContent != null && !controllerContent.isEmpty()) {
                 controllerParse.setParseContent(controllerContent);
@@ -153,7 +153,7 @@ public class ControllerPolicy {
     public boolean topicBrokerPermission(String group, boolean type) {
         if (group != null && controllerDetail != null &&
                 !controllerDetail.isEmpty()) {
-            ControllerParse controllerParse = controllerDetail.get(ControllerType.TOPIC_BROKER_PERMISSION);
+            ControllerParse controllerParse = controllerDetail.get(AppPermissionType.TOPIC_BROKER_PERMISSION);
             if (controllerParse == null) {
                 return false;
             }
@@ -192,7 +192,7 @@ public class ControllerPolicy {
             ControllerParse controllerParse = null;
             Map<String, String> contents = null;
 
-            controllerParse = controllerDetail.get(ControllerType.APP_CLIENT_IP_LIMIT);
+            controllerParse = controllerDetail.get(AppPermissionType.APP_CLIENT_IP_LIMIT);
             if (controllerParse == null) {
                 return false;
             }
@@ -220,11 +220,11 @@ public class ControllerPolicy {
         return false;
     }
 
-    public Map<ControllerType, ControllerParse> getControllerDetail() {
+    public Map<AppPermissionType, ControllerParse> getControllerDetail() {
         return controllerDetail;
     }
 
-    public void setControllerDetail(Map<ControllerType, ControllerParse> controllerDetail) {
+    public void setControllerDetail(Map<AppPermissionType, ControllerParse> controllerDetail) {
         this.controllerDetail = controllerDetail;
     }
 

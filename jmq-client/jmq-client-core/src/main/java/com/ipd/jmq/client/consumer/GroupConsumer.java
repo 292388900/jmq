@@ -21,7 +21,7 @@ import com.ipd.jmq.common.network.v3.session.ConsumerId;
 import com.ipd.jmq.common.network.FailoverState;
 import com.ipd.jmq.common.network.TransportException;
 import com.ipd.jmq.common.model.Acknowledge;
-import com.ipd.jmq.common.network.command.Command;
+import com.ipd.jmq.common.network.v3.command.Command;
 import com.ipd.jmq.toolkit.concurrent.EventListener;
 import com.ipd.jmq.toolkit.service.Service;
 import com.ipd.jmq.toolkit.time.SystemClock;

@@ -1,13 +1,12 @@
 package com.ipd.jmq.common.network.v3.codec;
 
-import com.ipd.jmq.common.network.netty.codec.Codec;
 import com.ipd.jmq.common.network.v3.codec.decode.JMQDecoder;
 import com.ipd.jmq.common.network.v3.codec.encode.JMQEncoder;
 import com.ipd.jmq.common.network.v3.command.DefaultCommandFactory;
 import com.ipd.jmq.common.network.v3.command.JMQHeader;
 import com.ipd.jmq.common.network.v3.command.JMQPayload;
 import com.ipd.jmq.common.network.TransportException;
-import com.ipd.jmq.common.network.command.Command;
+import com.ipd.jmq.common.network.v3.command.Command;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -18,7 +18,7 @@ import com.ipd.jmq.server.broker.cluster.ClusterEvent;
 import com.ipd.jmq.server.broker.cluster.ClusterManager;
 import com.ipd.jmq.server.broker.cluster.TopicUpdateEvent;
 import com.ipd.jmq.server.broker.monitor.BrokerMonitor;
-//import com.ipd.jmq.server.broker.retry.RetryManager;
+import com.ipd.jmq.server.broker.retry.RetryManager;
 import com.ipd.jmq.server.broker.sequence.Sequence;
 import com.ipd.jmq.server.store.ConsumeQueue;
 import com.ipd.jmq.server.store.GetResult;
@@ -60,7 +60,7 @@ public class DispatchManager extends Service implements DispatchService {
     // 集群管理
     protected ClusterManager clusterManager;
     // 获取重试数据。
-//    protected RetryManager retryManager;
+    protected RetryManager retryManager;
     // 会话监听器
     protected EventListener<SessionManager.SessionEvent> sessionListener;
     // 集群监听器
@@ -87,8 +87,54 @@ public class DispatchManager extends Service implements DispatchService {
     private OffsetManager offsetManager;
 
     protected static int DEFAULT_BLOCK_EXPIRED = 1500;
-//RetryManager retryManager,
-    public DispatchManager(SessionManager sessionManager, final ClusterManager clusterManager,
+    public DispatchManager(){
+        concurrentPull = new ConcurrentPull();
+        concurrentPull.setDispatchManager(this);
+        this.clusterListener = new EventListener<ClusterEvent>() {
+            @Override
+            public void onEvent(ClusterEvent event) {
+                if (isStarted()) {
+                    try {
+                        switch (event.getType()) {
+                            case TOPIC_UPDATE:
+                                TopicUpdateEvent topicNotify = (TopicUpdateEvent) event;
+                                onQueueChange(topicNotify.getTopicConfig().getTopic(),
+                                        topicNotify.getTopicConfig().getQueues());
+                                break;
+                        }
+                    } catch (JMQException e) {
+                        logger.error(e.getMessage(), e);
+                    }
+                }
+            }
+        };
+        this.sessionListener = new EventListener<SessionManager.SessionEvent>() {
+            @Override
+            public void onEvent(SessionManager.SessionEvent event) {
+                if (isStarted()) {
+                    try {
+                        switch (event.getType()) {
+                            case AddConsumer:
+                                onAddConsumer(event.getConsumer());
+                                break;
+                            case RemoveConsumer:
+                                onRemoveConsumer(event.getConsumer());
+                                break;
+                            case AddProducer:
+                                onAddProducer(event.getProducer());
+                                break;
+                        }
+                    } catch (JMQException e) {
+                        if (isStarted()) {
+                            logger.error(e.getMessage());
+                        }
+                    }
+                }
+            }
+        };
+
+    }
+    public DispatchManager(SessionManager sessionManager, final ClusterManager clusterManager, RetryManager retryManager,
                            BrokerConfig config, OffsetManager offsetManager) {
         if (sessionManager == null) {
             throw new IllegalArgumentException("retryManager can not be null");
@@ -96,9 +142,9 @@ public class DispatchManager extends Service implements DispatchService {
         if (clusterManager == null) {
             throw new IllegalArgumentException("clusterManager can not be null");
         }
-//        if (retryManager == null) {
-//            throw new IllegalArgumentException("retryManager can not be null");
-//        }
+        if (retryManager == null) {
+            throw new IllegalArgumentException("retryManager can not be null");
+        }
         if (config == null) {
             throw new IllegalArgumentException("config can not be null");
         }
@@ -108,8 +154,8 @@ public class DispatchManager extends Service implements DispatchService {
 
         this.config = config;
         this.store = config.getStore();
-//        this.retryManager = retryManager;
-//        this.retryManager.setLeaderListener(this);
+        this.retryManager = retryManager;
+        this.retryManager.setLeaderListener(this);
         this.sessionManager = sessionManager;
         this.clusterManager = clusterManager;
         this.offsetManager = offsetManager;
@@ -161,6 +207,29 @@ public class DispatchManager extends Service implements DispatchService {
 
     public void setBrokerMonitor(BrokerMonitor brokerMonitor) {
         this.brokerMonitor = brokerMonitor;
+    }
+    public void setConfig(BrokerConfig config) {
+        this.config = config;
+        this.store = config.getStore();
+        concurrentPull.setBrokerConfig(config);
+    }
+
+    public void setSessionManager(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
+    }
+
+    public void setClusterManager(ClusterManager clusterManager) {
+        this.clusterManager = clusterManager;
+    }
+
+    public void setRetryManager(RetryManager retryManager) {
+        this.retryManager = retryManager;
+        this.retryManager.setLeaderListener(this);
+    }
+
+    public void setOffsetManager(OffsetManager offsetManager) {
+        this.offsetManager = offsetManager;
+        concurrentPull.setOffsetManager(offsetManager);
     }
 
     @Override
@@ -636,11 +705,10 @@ public class DispatchManager extends Service implements DispatchService {
         queues.add(topic.getQueue(MessageQueue.HIGH_PRIORITY_QUEUE));
         Boolean seeTryQueue = Boolean.FALSE;
         if (consumer.getType().equals(Consumer.ConsumeType.JMQ)) {
-            // 判断重试&& config.getRetryConfig().getRetryLimitSpeed() > 1
-//            && (counter.get() % config.getRetryConfig().getRetryLimitSpeed() != 0)
+            // 判断重试
             seeTryQueue = Boolean.TRUE;
             if ((consumerPolicy != null && (consumerPolicy.checkSequential() || !consumerPolicy.isRetry()))
-                    || (counter != null  )) {
+                    || (counter != null && config.getRetryConfig().getRetryLimitSpeed() > 1 && (counter.get() % config.getRetryConfig().getRetryLimitSpeed() != 0))) {
                 seeTryQueue = Boolean.FALSE;
             }
         }
@@ -772,7 +840,7 @@ public class DispatchManager extends Service implements DispatchService {
         GetResult getResult = new GetResult();
         getResult.setCode(JMQCode.SUCCESS);
         // 按ID升序排序
-        List<BrokerMessage> messages =null;// retryManager.getRetry(consumer.getTopic(), consumer.getApp(), count, location.getPullNext());
+        List<BrokerMessage> messages = retryManager.getRetry(consumer.getTopic(), consumer.getApp(), count, location.getPullNext());
         if (messages == null || messages.isEmpty()) {
             // 没有数据了，则从0开始
             getResult.setMinQueueOffset(-1);
@@ -1137,7 +1205,9 @@ public class DispatchManager extends Service implements DispatchService {
         }
 
 
-        logger.error(String.format("ack expired message topic:%s,queueId:%d,offset:%d,app:%s", topic, queueId, offset, consumer));
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("reset ack offset topic:%s,queueId:%d,offset:%d,app:%s", topic, queueId, offset, consumer));
+        }
         offsetManager.resetAckOffset(topic, queueId, consumer, offset);
 
     }
@@ -1215,6 +1285,28 @@ public class DispatchManager extends Service implements DispatchService {
         }
 
         return localOffset;
+    }
+
+    @Override
+    public Set<Long> getOffsetsForKafkaBefore(String topic, int queueId, long timestamp, int maxNumOffsets) {
+        if (queueId == MessageQueue.RETRY_QUEUE) {
+            return Collections.singleton(0L);
+        }
+
+        if (timestamp == -1L) {
+            // 得到队列的最大位置
+            return Collections.singleton(store.getMaxOffset(topic, queueId));
+        } else if (timestamp == -2L) {
+            // 得到队列的最小位置
+            return Collections.singleton(store.getMinOffset(topic, queueId));
+        } else {
+            try {
+                return store.getQueueOffsetsBefore(topic, queueId, timestamp, maxNumOffsets);
+            } catch (JMQException e) {
+                logger.warn("topic={}, queue={} get offset before time={} failed! Will return the latest", topic, queueId, timestamp, e);
+                return Collections.singleton(store.getMaxOffset(topic, queueId));
+            }
+        }
     }
 
     @Override

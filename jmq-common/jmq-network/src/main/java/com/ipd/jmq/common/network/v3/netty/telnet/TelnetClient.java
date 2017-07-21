@@ -2,7 +2,7 @@ package com.ipd.jmq.common.network.v3.netty.telnet;
 
 import com.ipd.jmq.common.network.ClientConfig;
 import com.ipd.jmq.common.network.CommandHandlerFactory;
-import com.ipd.jmq.common.network.netty.AbstractClient;
+import com.ipd.jmq.common.network.v3.netty.AbstractClient;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.EventLoopGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
@@ -27,6 +27,6 @@ public class TelnetClient extends AbstractClient {
 
     @Override
     protected ChannelHandler[] createChannelHandlers() {
-        return new ChannelHandler[]{new TelnetClientDecoder(),new TelnetClientEncoder(), commandInvocation};
+        return new ChannelHandler[]{new TelnetClientDecoder(1024 * 1024, true, true), new TelnetClientEncoder(), commandInvocation};
     }
 }

@@ -128,6 +128,7 @@ public enum JMQCode {
     SE_APPEND_MESSAGE_SLOW(102, "追加消息处理慢"),
     SE_QUEUE_NOT_EXISTS(103, "消费队列不存在，主题:%s"),
     SE_FATAL_ERROR(104, "致命异常"),
+    SE_PENDING(105, "请求挂起"),
 
     // 111 ~ 130 复制异常码段, 以CY_开头
     CY_REPLICATE_ENQUEUE_TIMEOUT(111, "复制入队超时"),

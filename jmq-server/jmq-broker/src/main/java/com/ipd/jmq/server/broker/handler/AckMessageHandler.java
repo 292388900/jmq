@@ -6,23 +6,21 @@ import com.ipd.jmq.common.exception.JMQException;
 import com.ipd.jmq.common.message.MessageLocation;
 import com.ipd.jmq.common.message.MessageQueue;
 import com.ipd.jmq.common.message.QueueItem;
-import com.ipd.jmq.common.network.v3.command.AckMessage;
-import com.ipd.jmq.common.network.v3.command.CmdTypes;
-import com.ipd.jmq.common.network.v3.command.CommandUtils;
+import com.ipd.jmq.common.network.v3.command.*;
 import com.ipd.jmq.common.network.v3.session.Connection;
 import com.ipd.jmq.common.network.v3.session.ConnectionId;
 import com.ipd.jmq.common.network.v3.session.Consumer;
 import com.ipd.jmq.common.network.v3.session.ConsumerId;
+import com.ipd.jmq.server.broker.BrokerConfig;
 import com.ipd.jmq.server.broker.SessionManager;
+import com.ipd.jmq.server.broker.archive.ArchiveManager;
 import com.ipd.jmq.server.broker.cluster.ClusterManager;
 import com.ipd.jmq.server.broker.dispatch.DispatchService;
 import com.ipd.jmq.server.broker.monitor.BrokerMonitor;
-//import com.ipd.jmq.server.broker.retry.RetryManager;
+import com.ipd.jmq.server.broker.retry.RetryManager;
 import com.ipd.jmq.server.store.Store;
 import com.ipd.jmq.common.network.Transport;
 import com.ipd.jmq.common.network.TransportException;
-import com.ipd.jmq.common.network.command.Command;
-import com.ipd.jmq.common.network.command.Header;
 import com.ipd.jmq.toolkit.lang.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,21 +35,19 @@ import java.util.concurrent.ExecutorService;
 public class AckMessageHandler extends AbstractHandler implements JMQHandler {
     private static final Logger logger = LoggerFactory.getLogger(AckMessageHandler.class);
     private Store store;
-//    private RetryManager retryManager;
+    private RetryManager retryManager;
     private DispatchService dispatchService;
     private ClusterManager clusterManager;
-//    private ArchiveManager archiveManager;
+    private ArchiveManager archiveManager;
     protected BrokerMonitor brokerMonitor;
+    private BrokerConfig config;
 
-// RetryManager retryManager,
-//ArchiveManager archiveManager,
+    public AckMessageHandler(){}
     public AckMessageHandler(ExecutorService executorService, SessionManager sessionManager,
                              ClusterManager clusterManager, DispatchService dispatchService, Store store, BrokerMonitor brokerMonitor) {
 
         Preconditions.checkArgument(store != null, "store can not be null");
-//        Preconditions.checkArgument(retryManager != null, "retryManager can not be null");
         Preconditions.checkArgument(brokerMonitor != null, "brokerMonitor can not be null");
-//        Preconditions.checkArgument(archiveManager != null, "archiveManager can not be null");
         Preconditions.checkArgument(clusterManager != null, "clusterManager can not be null");
         Preconditions.checkArgument(sessionManager != null, "sessionManager can not be null");
         Preconditions.checkArgument(dispatchService != null, "dispatchService can not be null");
@@ -62,9 +58,39 @@ public class AckMessageHandler extends AbstractHandler implements JMQHandler {
         this.clusterManager = clusterManager;
         this.broker = clusterManager.getBroker();
         this.dispatchService = dispatchService;
-//        this.retryManager = retryManager;
-//        this.archiveManager = archiveManager;
         this.store = store;
+        this.brokerMonitor = brokerMonitor;
+    }
+
+    public void setConfig(BrokerConfig config) {
+        this.config = config;
+        this.store = config.getStore();
+    }
+
+    public void setArchiveManager(ArchiveManager archiveManager) {
+        this.archiveManager = archiveManager;
+    }
+
+    public void setRetryManager(RetryManager retryManager) {
+        this.retryManager = retryManager;
+    }
+
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
+    }
+    public void setSessionManager(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
+    }
+    public void setDispatchService(DispatchService dispatchService) {
+        this.dispatchService = dispatchService;
+    }
+
+    public void setClusterManager(ClusterManager clusterManager) {
+        this.clusterManager = clusterManager;
+        this.broker = clusterManager.getBroker();
+    }
+
+    public void setBrokerMonitor(BrokerMonitor brokerMonitor) {
         this.brokerMonitor = brokerMonitor;
     }
 
@@ -126,7 +152,9 @@ public class AckMessageHandler extends AbstractHandler implements JMQHandler {
                                     logger.error("get queue item error", e);
                                 }
                             }
-                           // archiveManager.writeConsume(connection, location);
+                            if(null!=archiveManager) {
+                                archiveManager.writeConsume(connection, location);
+                            }
                         }
                     }
                 }
@@ -139,14 +167,17 @@ public class AckMessageHandler extends AbstractHandler implements JMQHandler {
                             retryIds[count++] = location.getQueueOffset();
                         }
                         // 忽略重试异常
-                       // retryManager.retrySuccess(topic, connection.getApp(), retryIds);
-
+                        if(null!=retryManager) {
+                            retryManager.retrySuccess(topic, connection.getApp(), retryIds);
+                        }
                         //监控
                         brokerMonitor.onRetrySuccess(topic, connection.getApp(), retryIds.length);
 
                         if (isArchive) {
                             for (MessageLocation location : locations) {
-                               // archiveManager.writeConsume(connection, location);
+                                if(null!=archiveManager) {
+                                    archiveManager.writeConsume(connection, location);
+                                }
                             }
                         }
                     } catch (Exception e) {

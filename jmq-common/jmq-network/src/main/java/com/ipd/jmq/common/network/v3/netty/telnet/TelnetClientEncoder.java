@@ -1,9 +1,9 @@
 package com.ipd.jmq.common.network.v3.netty.telnet;
 
-import com.ipd.jmq.common.network.command.Command;
-import com.ipd.jmq.common.network.netty.codec.Encoder;
-import com.ipd.jmq.common.network.protocol.telnet.TelnetEscape;
-import com.ipd.jmq.common.network.protocol.telnet.TelnetRequest;
+import com.ipd.jmq.common.network.v3.command.Command;
+import com.ipd.jmq.common.network.v3.codec.Encoder;
+import com.ipd.jmq.common.network.v3.protocol.telnet.TelnetEscape;
+import com.ipd.jmq.common.network.v3.protocol.telnet.TelnetRequest;
 import com.ipd.jmq.toolkit.lang.Charsets;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

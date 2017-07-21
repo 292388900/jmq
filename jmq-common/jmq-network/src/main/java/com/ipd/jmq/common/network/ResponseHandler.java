@@ -4,8 +4,8 @@ package com.ipd.jmq.common.network;
  * Created by hexiaofeng on 16-6-23.
  */
 
-import com.ipd.jmq.common.network.command.Command;
-import com.ipd.jmq.common.network.command.Header;
+import com.ipd.jmq.common.network.v3.command.Command;
+import com.ipd.jmq.common.network.v3.command.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
