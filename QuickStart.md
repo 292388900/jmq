@@ -109,4 +109,3 @@ Receive simple example (refer to jmq-example/ApiConsumerTest.java)
 So far if you completed the previous work, congratulations! you're getting started.
 Then you will see some advanced features such as order-message, transaction-message, parallel consumption,replication policy.
 
-See [vagrant/README.md](vagrant/README.md).
