@@ -7,7 +7,6 @@ capacity and flexible scalability.
 JD researched the JMQ independently, with all of its proprietary intellectual property and manufacturing technology.
 
 ### JMQ Feature ###
-The following softwares are assumed installed:
   1. Technical standard
    - Custom protocol specification
    - Compatibility with kafka protocol
