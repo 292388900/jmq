@@ -4,7 +4,6 @@ JMQ is distributed messaging and streaming data platform with low latency, high 
 
 capacity and flexible scalability.
 
-JD researched the JMQ independently, with all of its proprietary intellectual property and manufacturing technology.
 
 ### JMQ Feature ###
   1. Technical standard
