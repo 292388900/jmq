@@ -44,3 +44,14 @@ capacity and flexible scalability.
 ### BEST PRACTICE ###
    - Core Concept
 
+### Contribution ###
+   At present, our community is still under construction.
+   The initial contributors below
+   hexiaofeng
+   dingjun
+   lindeqiang
+   zhangkepeng
+   luoruiheng
+   tianya
+   weiqisong
+   hujunliang
