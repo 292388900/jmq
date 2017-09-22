@@ -47,7 +47,7 @@ capacity and flexible scalability.
 ### Contribution ###
    At present, our community is still under construction.
    
-  The initial contributors below
+  The original contributors below
    
    - hexiaofeng
    - dingjun
