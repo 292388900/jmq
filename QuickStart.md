@@ -14,7 +14,7 @@ The following softwares are assumed installed:
 
 ### Clone AND Build ###
 
-    > git clone https://github.com/ipdcode/jmq
+    > git clone https://github.com/tigcode/jmq
     > cd jmq
     > mvn -Prelease-all -DskipTests clean install -U
 
