@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jmq="http://code.ipd.com/schema/jmq"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://code.ipd.com/schema/jmq
+	    http://code.ipd.com/schema/jmq/jmq-1.0.xsd">
+
+    <bean id="propertyConfigurer"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:conf/mq.properties</value>
+            </list>
+        </property>
+    </bean>
+    <jmq:transport id="jmq.transport" address="${jmq.address}" user="${jmq.user}" password="${jmq.password}" app="${jmq.producer.app}"
+                   epoll="false" maxIdleTime="10000"/>
+
+    <jmq:producer id="producer" retryTimes="3" transport="jmq.transport" txFeedback="txFeedbackMgr"/>
+
+    <bean id="txFeedbackMgr" class="com.ipd.jmq.client.transaction.TxFeedbackManager" >
+        <constructor-arg index="0" ref="jmq.transport"/>
+        <property name="queriers">
+            <map key-type="java.lang.String" >
+                <entry key="${jmq.producer.topic}" value-ref="localTxStatusQuerier" />
+            </map>
+        </property>
+    </bean>
+
+    <bean id="localTxStatusQuerier" class="com.ipd.jmq.demo.producer.LocalTxStatusQuerier" />
+
+</beans>

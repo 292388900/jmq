@@ -1,0 +1,3 @@
+com.ipd.jmq.registry.provider.FailoverProvider
+com.ipd.jmq.registry.provider.FileProvider
+com.ipd.jmq.registry.provider.HttpProvider

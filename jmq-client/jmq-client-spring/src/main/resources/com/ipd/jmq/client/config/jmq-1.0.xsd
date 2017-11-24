@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://code.ipd.com/schema/jmq"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://code.ipd.com/schema/jmq"
+            elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+    <!-- transport manager -->
+    <xsd:complexType name="transportType">
+        <xsd:attribute name="id" type="xsd:string" />
+        <xsd:attribute name="address" type="xsd:string" use="required"/>
+        <xsd:attribute name="user" type="xsd:string" use="required"/>
+        <xsd:attribute name="password" type="xsd:string" use="required"/>
+        <xsd:attribute name="app" type="xsd:string" use="required"/>
+        <xsd:attribute name="tempPath" type="xsd:string"/>
+        <xsd:attribute name="updateClusterInterval" type="xsd:string"/>
+        <xsd:attribute name="connectionTimeout" type="xsd:string"/>
+        <xsd:attribute name="sendTimeout" type="xsd:string"/>
+        <xsd:attribute name="workerThreads" type="xsd:string"/>
+        <xsd:attribute name="callbackExecutorThreads" type="xsd:string"/>
+        <xsd:attribute name="selectorThreads" type="xsd:string"/>
+        <xsd:attribute name="maxIdleTime" type="xsd:string"/>
+        <xsd:attribute name="reuseAddress" type="xsd:string"/>
+        <xsd:attribute name="soLinger" type="xsd:string"/>
+        <xsd:attribute name="tcpNoDelay" type="xsd:string"/>
+        <xsd:attribute name="keepAlive" type="xsd:string"/>
+        <xsd:attribute name="soTimeout" type="xsd:string"/>
+        <xsd:attribute name="socketBufferSize" type="xsd:string"/>
+        <xsd:attribute name="epoll" type="xsd:string"/>
+        <xsd:attribute name="maxOneway" type="xsd:string"/>
+        <xsd:attribute name="maxAsync" type="xsd:string"/>
+
+    </xsd:complexType>
+
+
+    <!-- message consumer -->
+    <xsd:complexType name="consumerType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element ref="listener"/>
+        </xsd:choice>
+        <xsd:attribute name="id" type="xsd:string" />
+        <xsd:attribute name="transport" type="xsd:string"/>
+        <xsd:attribute name="prefetchSize" type="xsd:string"/>
+        <xsd:attribute name="longPull" type="xsd:string"/>
+        <xsd:attribute name="pullInterval" type="xsd:string"/>
+        <xsd:attribute name="pullEmptySleep" type="xsd:string"/>
+        <xsd:attribute name="pullTimeout" type="xsd:string"/>
+        <xsd:attribute name="maxRetrys" type="xsd:string"/>
+        <xsd:attribute name="maxRetryDelay" type="xsd:string"/>
+        <xsd:attribute name="retryDelay" type="xsd:string"/>
+        <xsd:attribute name="useExponentialBackOff" type="xsd:string"/>
+        <xsd:attribute name="backOffMultiplier" type="xsd:string"/>
+        <xsd:attribute name="expireTime" type="xsd:string"/>
+        <xsd:attribute name="autoStart" type="xsd:string"/>
+        <xsd:attribute name="maxConcurrent" type="xsd:string"/>
+        <xsd:attribute name="minConcurrent" type="xsd:string"/>
+        <xsd:attribute name="persistConsumerOffsetInterval" type="xsd:string"/>
+        <xsd:attribute name="clientName" type="xsd:string"/>
+    </xsd:complexType>
+
+    <!--consumerSetting -->
+    <xsd:complexType name="listenerType">
+        <xsd:attribute name="topic" type="xsd:string"/>
+        <xsd:attribute name="selector" type="xsd:string"/>
+        <xsd:attribute name="listener" type="xsd:string"/>
+
+        <xsd:attribute name="prefetchSize" type="xsd:string"/>
+        <xsd:attribute name="longPull" type="xsd:string"/>
+        <xsd:attribute name="pullInterval" type="xsd:string"/>
+        <xsd:attribute name="pullEmptySleep" type="xsd:string"/>
+        <xsd:attribute name="pullTimeout" type="xsd:string"/>
+        <xsd:attribute name="maxRetrys" type="xsd:string"/>
+        <xsd:attribute name="maxRetryDelay" type="xsd:string"/>
+        <xsd:attribute name="retryDelay" type="xsd:string"/>
+        <xsd:attribute name="useExponentialBackOff" type="xsd:string"/>
+        <xsd:attribute name="backOffMultiplier" type="xsd:string"/>
+        <xsd:attribute name="expireTime" type="xsd:string"/>
+        <xsd:attribute name="autoStart" type="xsd:string"/>
+        <xsd:attribute name="maxConcurrent" type="xsd:string"/>
+        <xsd:attribute name="minConcurrent" type="xsd:string"/>
+        <xsd:attribute name="persistConsumerOffsetInterval" type="xsd:string"/>
+        <xsd:attribute name="clientName" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="producerType">
+        <xsd:attribute name="id" type="xsd:string" />
+        <xsd:attribute name="transport" type="xsd:string"/>
+        <xsd:attribute name="txFeedback" type="xsd:string" />
+        <xsd:attribute name="retryTimes" type="xsd:string"/>
+        <xsd:attribute name="acknowledge" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:element name="transport" type="transportType"/>
+    <xsd:element name="listener" type="listenerType"/>
+    <xsd:element name="producer" type="producerType"/>
+    <xsd:element name="consumer" type="consumerType"/>
+
+</xsd:schema>

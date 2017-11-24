@@ -1,0 +1,29 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <!--<bean id="configuration" class="org.apache.hadoop.hbase.HBaseConfiguration" factory-method="create"/>
+
+    <bean id="hTablePool" class="org.apache.hadoop.hbase.client.HTablePool">
+        <constructor-arg index="0" ref="configuration"/>
+        <constructor-arg index="1" value="${hbase.poolSize}"/>
+    </bean>
+
+    <bean id="monitorRecordDao" class="com.ipd.jmq.common.hbase.dao.MonitorRecordDao">
+        <constructor-arg index="0" ref="hTablePool"/>
+    </bean>
+
+    <bean id="clientStatConfig" class="com.ipd.jmq.server.broker.profile.ClientStatConfig">
+        <constructor-arg>
+            <map>
+                <entry key="monitor.dao" value-ref="monitorRecordDao"/>
+            </map>
+        </constructor-arg>
+        <property name="clientStatType" value="hbase"/>
+    </bean>-->
+    <bean id="clientStatConfig" class="com.ipd.jmq.server.broker.profile.ClientStatConfig">
+        <property name="clientStatType" value=""/>
+    </bean>
+
+</beans>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	">
+
+    <bean id="storeConfig" class="com.ipd.jmq.server.store.StoreConfig">
+        <constructor-arg value="${store.path}/${broker.name}"/>
+        <property name="flushTimeout" value="${store.flushTimeout}"/>
+        <property name="cleanInterval" value="${store.cleanInterval}"/>
+        <property name="deleteFilesInterval" value="${store.deleteFilesInterval}"/>
+        <property name="deleteTime" value="${store.deleteTime}"/>
+        <property name="fileReserveTime" value="${store.fileReserveTime}"/>
+        <property name="maxDiskSpaceUsage" value="${store.maxDiskSpaceUsage}"/>
+        <property name="maxDiskSpace" value="${store.maxDiskSpace}"/>
+        <property name="maxMessageSize" value="${store.maxMessageSize}"/>
+        <property name="maxBatchSize" value="${store.maxBatchSize}"/>
+        <property name="bufferPoolSize" value="${store.bufferPoolSize}"/>
+        <property name="writeQueueSize" value="${store.writeQueueSize}"/>
+        <property name="writeEnqueueTimeout" value="${store.writeEnqueueTimeout}"/>
+        <property name="commitQueueSize" value="${store.commitQueueSize}"/>
+        <property name="dispatchFlowThreshold" value="${store.dispatchQueueSize}"/>
+        <property name="defaultQueues" value="${store.defaultQueues}"/>
+        <property name="checksumOnRecover" value="${store.checksumOnRecover}"/>
+        <property name="ignoreJournalError" value="${store.ignoreJournalError}"/>
+        <property name="journalConfig">
+            <bean class="com.ipd.jmq.server.store.journal.JournalConfig">
+                <property name="dataSize" value="${store.journal.fileSize}"/>
+                <property name="cacheSize" value="${store.journalCacheSize}"/>
+                <property name="suffix" value="${store.journalSuffix}"/>
+            </bean>
+        </property>
+        <property name="queueConfig">
+            <bean class="com.ipd.jmq.server.store.journal.JournalConfig">
+                <property name="dataSize" value="${store.queue.fileSize}"/>
+                <property name="cacheSize" value="${store.queueCacheSize}"/>
+                <property name="suffix" value="${store.queueSuffix}"/>
+            </bean>
+        </property>
+        <property name="journalFlushPolicy">
+            <bean class="com.ipd.jmq.server.store.FlushPolicy">
+                <property name="sync" value="${store.journal.flushPolicy.sync}"/>
+                <property name="syncTimeout" value="${store.journal.flushPolicy.syncTimeout}"/>
+                <property name="flushInterval" value="${store.journal.flushPolicy.flushInterval}"/>
+                <property name="dataSize" value="${store.journal.flushPolicy.dataSize}"/>
+            </bean>
+        </property>
+        <property name="queueFlushPolicy">
+            <bean class="com.ipd.jmq.server.store.FlushPolicy">
+                <property name="sync" value="${store.queue.flushPolicy.sync}"/>
+                <property name="flushInterval" value="${store.queue.flushPolicy.flushInterval}"/>
+                <property name="dataSize" value="${store.queue.flushPolicy.dataSize}"/>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="offsetConfig" class="com.ipd.jmq.server.broker.offset.OffsetConfig">
+        <constructor-arg value="${store.path}/${broker.name}"/>
+    </bean>
+
+</beans>

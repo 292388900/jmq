@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+
+    <bean id="retryPolicy" class="com.ipd.jmq.toolkit.retry.RetryPolicy">
+        <property name="maxRetrys" value="${retry.maxRetrys}"/>
+        <property name="maxRetryDelay" value="${retry.maxRetryDelay}"/>
+        <property name="useExponentialBackOff" value="${retry.useExponentialBackOff}"/>
+        <property name="backOffMultiplier" value="${retry.backOffMultiplier}"/>
+        <property name="expireTime" value="${retry.expireTime}"/>
+        <property name="retryDelay" value="${retry.retryDelay}"/>
+    </bean>
+
+    <bean id="retryConfig" class="com.ipd.jmq.server.broker.retry.RetryConfig">
+        <property name="retryLeaderPath" value="${registry.retryLeaderPath}"/>
+        <property name="retryQueueSize" value="${retry.queueSize}"/>
+        <property name="retryFetchSize" value="${retry.fetchSize}"/>
+        <property name="retryFetchThreads" value="${retry.fetchThreads}"/>
+        <property name="retryFetchInterval" value="${retry.fetchInterval}"/>
+        <property name="retryTables" value="${retry.tables}"/>
+      <!--  <property name="retryManagerListener" ref="retryListener"/>-->
+        <property name="statTimeWindowSize" value="${retry.statTimeWindowSize}"/>
+        <property name="limitTimes" value="${retry.limitTimes}"/>
+        <property name="fixAddress" value="${retry.fixAddress}"/>
+        <property name="redisRetryCheckThreads" value="${retry.redisRetryCheckThreads}"/>
+        <property name="retryLimitSpeed" value="${retry.limitSpeed}" />
+        <property name="remoteLoadRetryCount" value="${retry.remoteLoadRetryCount}" />
+    </bean>
+
+</beans>
