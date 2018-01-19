@@ -1,48 +1,48 @@
 Quick Start
 =================
-This quick start guide is a detailed instruction of setting up JMQ messaging system 
-
+This quick start guide is a set of detailed instructions of setting up JMQ messaging system 
 on your local machine to send and receive messages.
 
-### Prerequisite ###
+### Prerequisites ###
 The following softwares are assumed installed:
-  1. 64bit OS, Linux/Unix/Mac is recommended or win7/8/10
-  2. 64bit JDK 1.7+
+
+  1. 64-bit OS
+   * Linux/Unix/Mac OS (recommended)
+   * Windows 7/8/10
+  2. 64-bit JDK 1.7+
   3. Maven 3.1.x
   4. Git
   5. Zookeeper 3.0+
 
-### Clone AND Build ###
+### Clone & Build ###
 
     > git clone https://github.com/tigcode/jmq
     > cd jmq
     > mvn -Prelease-all -DskipTests clean install -U
 
 ### Start Zookeeper ###
-Download or use your owned zookeeper to provide service
+Start your Zookeeper server. 
 
-### Start BROKER ###
-The default registry service of broker is zookeeper,the address is 127.0.0.1:2181
+### Start Broker ###
+The default broker registration is provided by Zookeeper at the address 127.0.0.1:2181. That address can be changed in the pom.xml of the module jmq-server/jmq-broker-runtime, which contains most configuration items that can be customized.
 
-If you want to edit it, please see the pom.xml of jmq-broker-runtime in which the most of config infos is
-
-The service of broker is jmq-broker-runtime module
+The jmq-broker-runtime module is the part of broker service.
 
     > cd jmq-broker-runtime/jmq-server/jmq-broker-runtime/target/jmq-server/jmq-server/bin
     > chmod 755 *
     > nohup sh bin/startmq.sh &
     > tail -f ~/export/Logs/jmq.server/{address}/jmq-server.log
 
-### Init Cluster Infos ###
-At present we only provide the config approach for broker and topic
+### Set up a Cluster ###
+So far we just introduces the config approach for brokers and topics.
 
-The path of broker template file is jmq-service/jmq-broker/test/resources/broker_init.json
+The broker template file can be found at *jmq-service/jmq-broker/test/resources/broker_init.json*.
 
-The path of topic template file is jmq-service/jmq-broker/test/resources/topic_init.json
+The topic template file can be found at *jmq-service/jmq-broker/test/resources/topic_init.json*.
 
-You may make appropriate changes or use the default config to initialize the cluster infos
+You may make appropriate changes or just use the defaults to initialize the cluster infomation.
 
-Initialize cluster infos use the telnet protocol
+Initialize cluster infos use the telnet protocol.
 
 Suppose the address of broker is 192.168.1.5
 
@@ -59,17 +59,17 @@ Suppose the address of broker is 192.168.1.5
 
 ### Send & Receive Messages ###
 
-Send simple example(refer to jmq-example/ApiProducerTest.java)
+A simple example for message sending(refer to jmq-example/ApiProducerTest.java)
 
 ```java
-        // connection Configuration
+        // connection settings
         TransportConfig config = new TransportConfig();
         config.setApp(app);
         config.setAddress(address);
         config.setUser("jmq");
         config.setPassword("jmq");
         config.setSendTimeout(10000);
-        // set epoll pattern，windows set false and linux set true
+        // epoll mode is used on Linux, not used on Windows
         config.setEpoll(false);
         manager = new ClusterTransportManager(config);
         manager.start();
@@ -80,17 +80,17 @@ Send simple example(refer to jmq-example/ApiProducerTest.java)
         producer.send(message);
 ```
 
-Receive simple example (refer to jmq-example/ApiConsumerTest.java)
+A simple example for message receiving(refer to jmq-example/ApiConsumerTest.java)
 
 ```java
-       // connection Configuration
+       // connection settings
        TransportConfig config = new TransportConfig();
        config.setApp(app);
        config.setAddress(address);
        config.setUser("jmq");
        config.setPassword("jmq");
        config.setSendTimeout(5000);
-       // set epoll pattern，windows set false and linux set true
+       // epoll mode is used on Linux, not used on Windows
        config.setEpoll(false);
        ConsumerConfig consumerConfig = new ConsumerConfig();
        manager = new ClusterTransportManager(config);
@@ -98,12 +98,13 @@ Receive simple example (refer to jmq-example/ApiConsumerTest.java)
        // launch consumer service
        messageConsumer.start();
        
-       // subscribe topic 
+       // subscribe the topic 
        messageConsumer.subscribe(topic, messageListener);
        CountDownLatch latch = new CountDownLatch(1);
        latch.await();
 ```
     
-So far if you completed the previous work, congratulations! you're getting started.
-Then you will see some advanced features such as order-message, transaction-message, parallel consumption,replication policy.
+So far the set up is done. Congratulations!
+
+Next, you will see advanced features such as ordered messaging, transactional messaging, parallel consumption,replication policies.
 
