@@ -1,53 +1,52 @@
 JMQ
 =================
-JMQ is distributed messaging and streaming data platform with low latency, high performance and reliability, trillion-level 
-
-capacity and flexible scalability.
+JMQ<sup>TM</sup> is a distributed messaging and streaming data platform with low latency, high performance, reliability, trillion-level capacity and flexible scalability.
 
 
-### JMQ Feature ###
-  1. Technical standard
-   - Custom protocol specification
-   - Compatibility with kafka protocol
-  2. HA
-   - Master/Slave mode deployment. Support failover
+### JMQ Features ###
+* Technical Standards
+   - Custom protocol specifications
+   - Compatibility with Kafka protocol
+   
+* HA(High Availability)
+   - Master/Slave mode deployment. Automatic failover
    - Messages are asynchronously archived to cloud storage
-   - Unified exception message retry service for fault tolerance
-  3. Low Latency
-   - Sync flush disk, TPS for 1K data is 21000.Response time is 0.004 second
-   - Async flush disk, TPS for 1K data is 53894.Response time is 0.004 second
-  4. Industry Sustainable
-   - Trillion-level message capacity guaranteed 
-  5. Light-client Model
-   - Only communicate with broker
-   - Consumer support pull model
-   - Order-message
-   - Transaction-message
-   - Multi IDC deployment, send and consume nearby
+   - Fault tolerance with unified exception message retry service for   
+
+* Low Latency
+   - Synchronous disk flush, TPS can reach over 20,000 while response time is just 0.004 second, when message size is not greater than 1KB
+   - Asynchronous disk flush, TPS can reach over 53,000 while response time is just 0.004 second, when message size is not greater than 1KB
+   
+* Industrial-grade Sustainability
+   - Trillion-level messaging capacity guaranteed
+   
+* Lightweight-client Model
+   - Only communicating with brokers
+   - Consumers supporting Pull model
+   - Ordered Messaging
+   - Transactional Messaging
+   - Multiple IDC deployment, nearby message production & consumption
    - Parallel consumption
-  6. Flexible Replication Policy
-   - Default sync replication or degrade async replication
-   - Fixed or dynamic election strategy
-   - Support for consumption from slave
+   
+* Flexible Replication Policy
+   - Default synchronous replication or degraded asynchronous replication
+   - Fixed or dynamic leader election
+   - Slave consumption
 
 
-
-### USER GUIDE ###
+### User Guide ###
    -  [Quick Start](QuickStart.md)
    -  [Simple Example](QuickStart.md)
-   -  FQA 
+   -  FAQ
 
-### DEPLOYMENT & OPERATIONS ###
+### Deployment & Operation ###
    - [Deployment](Deployment.md) 
-   - Operations 
+   - Operation
    
-### BEST PRACTICE ###
-   - Core Concept
+### Best Practices ###
+   - Core Concepts
 
-### Contribution ###
-   At present, our community is still under construction.
-   
-  The list of original contributors:
+### Contributors ###
    
    - hexiaofeng
    - dingjun
